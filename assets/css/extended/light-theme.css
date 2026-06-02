@@ -1,0 +1,108 @@
+/* 浅色主题自定义 */
+
+/* 顶部导航栏更干净 */
+.nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* 首页标题区 */
+.profile {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* 文章卡片微调 */
+.post-entry {
+    border-left: 3px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.post-entry:hover {
+    border-left-color: #2563eb;
+    background: #f8fafc;
+}
+
+/* 链接颜色 */
+a {
+    color: #2563eb;
+}
+
+a:hover {
+    color: #1d4ed8;
+}
+
+/* 代码块浅色背景 */
+code {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+pre {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0;
+}
+
+/* 表格 */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    background: #f1f5f9;
+    color: #1e3a5f;
+}
+
+tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+/* 引用块 */
+blockquote {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+}
+
+/* 标签 */
+.post-tags a {
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 6px;
+}
+
+/* 整体背景微调 */
+body {
+    background: #ffffff;
+}
+
+/* 加深文字颜色 */
+:root {
+    --primary: #111111;
+    --secondary: #444444;
+    --content: #1a1a1a;
+}
+
+.post-content {
+    color: #1a1a1a;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+    color: #111111;
+}
+
+.post-content p,
+.post-content li {
+    color: #222222;
+}
+
+/* 文章摘要 */
+.post-entry .entry-content {
+    color: #444444;
+}

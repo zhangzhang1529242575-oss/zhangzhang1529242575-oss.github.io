@@ -5,6 +5,10 @@ title: 电机控制学习笔记
 theme: PaperMod
 
 params:
+  # 固定浅色主题
+  defaultTheme: light
+  disableThemeToggle: true
+
   # 个人信息
   author: 张章
   description: 电机控制博士生，记录学习与研究心得
