@@ -1,0 +1,71 @@
+baseURL: https://zhangzhang1529242575-oss.github.io/
+languageCode: zh-cn
+locale: zh-cn
+title: 电机控制学习笔记
+theme: PaperMod
+
+params:
+  # 个人信息
+  author: 张章
+  description: 电机控制博士生，记录学习与研究心得
+
+  # PaperMod 配置
+  profileMode:
+    enabled: true
+    title: 电机控制学习笔记
+    subtitle: 谐波抑制 · 鲁棒控制 · 滑模控制 · 重复控制
+    imageUrl: # 可以放头像
+    imageTitle: avatar
+
+  # 首页显示
+  homeInfoParams:
+    Title: 欢迎 👋
+    Content: |
+      这里是张章的个人技术博客。
+
+      研究方向：集成绕组双端口电机的谐波抑制与鲁棒控制。
+
+      记录论文笔记、控制理论学习、仿真与实验心得。
+
+  # 文章显示
+  ShowReadingTime: true
+  ShowShareButtons: false
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+
+  # KaTeX 数学公式渲染
+  math: true
+
+  # 用于KaTeX的额外head
+  assets:
+    disableFingerprinting: false
+    favicon: ""
+
+# 菜单
+menu:
+  main:
+    - identifier: posts
+      name: 文章
+      url: /posts/
+      weight: 10
+    - identifier: tags
+      name: 标签
+      url: /tags/
+      weight: 20
+    - identifier: search
+      name: 搜索
+      url: /search/
+      weight: 30
+    - identifier: about
+      name: 关于
+      url: /about/
+      weight: 40
+
+# Markdown 配置
+markup:
+  goldmark:
+    renderer:
+      unsafe: true  # 允许HTML（KaTeX需要）
+  highlight:
+    style: monokai
