@@ -4,6 +4,13 @@ locale: zh-cn
 title: 电机控制学习笔记
 theme: PaperMod
 
+# 搜索功能需要 JSON 索引
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
 params:
   # 固定浅色主题
   defaultTheme: light
@@ -13,21 +20,16 @@ params:
   author: 张章
   description: 电机控制博士生，记录学习与研究心得
 
-  # PaperMod 配置
+  # 首页 — 自定义 Hero 设计
   profileMode:
-    enabled: true
-    title: 电机控制学习笔记
-    subtitle: 谐波抑制 · 鲁棒控制 · 滑模控制 · 重复控制
-    imageUrl: # 可以放头像
-    imageTitle: avatar
+    enabled: false
 
-  # 首页显示
   homeInfoParams:
     Title: 欢迎 👋
     Content: |
       这里是张章的个人技术博客。
 
-      研究方向：集成绕组双端口电机的谐波抑制与鲁棒控制。
+      研究方向：多端口电机建模与控制、鲁棒控制算法、智能控制算法。
 
       记录论文笔记、控制理论学习、仿真与实验心得。
 
@@ -57,6 +59,10 @@ menu:
       name: 标签
       url: /tags/
       weight: 20
+    - identifier: portfolio
+      name: 代表作
+      url: /portfolio/
+      weight: 25
     - identifier: search
       name: 搜索
       url: /search/

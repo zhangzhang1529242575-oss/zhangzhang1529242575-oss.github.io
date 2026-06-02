@@ -1,18 +1,112 @@
-/* 浅色主题自定义 */
+/* ===========================
+   浅色主题自定义
+   =========================== */
 
-/* 顶部导航栏更干净 */
+/* ---- 顶部导航栏 ---- */
 .nav {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #f0f0f0;
 }
 
-/* 首页标题区 */
+#menu a {
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    background: rgba(37, 99, 235, 0.06);
+    transition: background 0.2s, color 0.2s;
+}
+
+#menu a:hover,
+#menu .active {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* ---- Hero 封面（极简学术风） ---- */
+.hero {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    min-height: calc(100vh - 60px);
+    background:
+        linear-gradient(rgba(44, 62, 80, 0.75), rgba(52, 73, 94, 0.75)),
+        url('/images/bg-834.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+}
+
+.hero-content {
+    max-width: 640px;
+    padding: 0 24px;
+}
+
+.hero h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+    color: #fff;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+    font-weight: 300;
+    color: #fff;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hero .btn {
+    padding: 12px 32px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.hero .btn-primary {
+    background: #fff;
+    color: #2c3e50;
+}
+
+.hero .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.hero .btn-secondary {
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    background: transparent;
+    color: #fff;
+}
+
+.hero .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 1.05rem; }
+}
+
+/* ---- 首页标题区（profileMode 已弃用，保留为空壳以防主题回退） ---- */
 .profile {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
+    display: none;
 }
 
 /* 文章卡片微调 */
@@ -74,13 +168,16 @@ blockquote {
     border-radius: 6px;
 }
 
-/* 整体背景微调 */
+/* ---- 全局背景 ---- */
 body {
     background: #ffffff;
 }
 
-/* 加深文字颜色 */
+/* 首页 Hero 已接管首屏，body 保持白底即可 */
+
+/* 页面宽度 */
 :root {
+    --main-width: 880px;
     --primary: #111111;
     --secondary: #444444;
     --content: #1a1a1a;
