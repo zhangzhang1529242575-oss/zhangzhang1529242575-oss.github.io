@@ -53,7 +53,7 @@ $$\boxed{G_{rc}(z) = \frac{1}{1 - Q z^{-N_0} \sum\limits_{i=0}^{m} D_i z^{-i}} \
 | $N_0 = \lfloor f_s / f_0 \rfloor$ | 整数阶延迟步数（$f_0$ 为基频） |
 | $N_1 = N - N_0$ | 分数部分，$N_1 \in [0, 1)$ |
 | $m$ | Lagrange 插值阶数（$m+1$ 个节点 $x_i = 0,1,\dots,m$） |
-| $D_i = \prod\limits_{\substack{j=0 \\\\ j \neq i}}^{m} \dfrac{N_1 - j}{i - j}$ | Lagrange 插值系数，$\sum D_i z^{-i} \approx z^{-N_1}$ |
+| $D_i = \prod\limits_{\substack{j=0 \\ j \neq i}}^{m} \dfrac{N_1 - j}{i - j}$ | Lagrange 插值系数，$\sum D_i z^{-i} \approx z^{-N_1}$ |
 | $Q$ | 内模系数，典型值 $Q = 0.95$（见 Fig. 3 幅频特性分析） |
 | $C(z)$ | 补偿器（相位超前 + 增益），保证闭环稳定性 |
 
