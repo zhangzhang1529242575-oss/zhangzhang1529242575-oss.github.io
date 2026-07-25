@@ -77,5 +77,15 @@ markup:
   goldmark:
     renderer:
       unsafe: true  # 允许HTML（KaTeX需要）
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+            - - '$$'
+              - '$$'
+          inline:
+            - - '$'
+              - '$'
   highlight:
     style: monokai

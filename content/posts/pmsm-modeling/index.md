@@ -1,5 +1,5 @@
 ---
-title: "永磁同步电机（PMSM）数学建模 — dq 同步旋转坐标系"
+title: "永磁同步电机（PMSM）数学建模"
 date: 2026-07-25
 math: true
 tags: ["PMSM", "数学建模", "坐标变换", "矢量控制", "dq模型"]
@@ -11,9 +11,17 @@ summary: "聚焦 dq 同步旋转坐标系，系统推导 PMSM 的电压、磁链
 
 永磁同步电机（Permanent Magnet Synchronous Motor, PMSM）具有高功率密度、高效率和宽调速范围等优势，已广泛应用于工业伺服、电动汽车、航空航天等领域。
 
-从控制的角度看，三相自然坐标系（abc）下的 PMSM 模型具有**非线性、强耦合、时变参数**的特点，直接在 abc 坐标系中设计控制器极为困难。通过坐标变换，将模型映射到与转子同步旋转的 dq 坐标系中——交流量变为直流量，时变电感变为常数，交叉耦合项物理意义明确——是矢量控制体系的理论基石。
+从控制的角度看，三相自然坐标系（abc）下的 PMSM 模型具有**非线性、强耦合、时变参数**的特点，直接在 abc 坐标系中设计控制器较为困难。通过坐标变换，将模型映射到与转子同步旋转的 dq 坐标系中——交流量变为直流量，时变电感变为常数，交叉耦合项物理意义明确——是矢量控制体系的理论基石。
 
-本文参照袁雷《现代永磁同步电机控制原理及MATLAB仿真》的建模框架，**侧重 dq 同步旋转坐标系**，依次推导电压方程、磁链方程、转矩方程和状态空间表达式，并讨论表贴式（SPMSM）与内置式（IPMSM）的建模差异。
+本文**侧重 dq 同步旋转坐标系**，依次推导电压方程、磁链方程、转矩方程和状态空间表达式，并讨论表贴式（SPMSM）与内置式（IPMSM）的建模差异。
+
+## 核心思想
+
+PMSM 数学建模的核心在于通过坐标变换实现解耦与降维。其核心思想是：
+
+> 通过坐标变换，将模型映射到与转子同步旋转的 dq 坐标系中——交流量变为直流量，时变电感变为常数，交叉耦合项物理意义明确——是矢量控制体系的理论基石。
+
+---
 
 ## 基本假设
 
@@ -40,7 +48,7 @@ $$
 \begin{bmatrix} f_\alpha \\ f_\beta \end{bmatrix}
 = \frac{2}{3}
 \begin{bmatrix}
-1 & -\dfrac{1}{2} & -\dfrac{1}{2} \\[6pt]
+1 & -\dfrac{1}{2} & -\dfrac{1}{2} \\[1em]
 0 & \dfrac{\sqrt{3}}{2} & -\dfrac{\sqrt{3}}{2}
 \end{bmatrix}
 \begin{bmatrix} f_a \\ f_b \\ f_c \end{bmatrix}
@@ -51,8 +59,7 @@ $$
 将静止 αβ 坐标系变换到与转子同步旋转的 dq 坐标系（d 轴对齐永磁体 N 极，q 轴超前 90°）：
 
 $$
-\begin{bmatrix} f_d \\ f_q \end{bmatrix}
-=
+\begin{bmatrix} f_d \\ f_q \end{bmatrix} =
 \begin{bmatrix}
 \cos\theta_e & \sin\theta_e \\
 -\sin\theta_e & \cos\theta_e
@@ -91,12 +98,10 @@ $$\frac{d}{dt}\boldsymbol{f}_{dq} = \boldsymbol{T}_{\alpha\beta \to dq} \frac{d}
 ### 3.1 电压方程
 
 $$
-\boxed{
 \begin{cases}
-u_d = R_s i_d + \dfrac{d\psi_d}{dt} - \omega_e \psi_q \\[10pt]
+u_d = R_s i_d + \dfrac{d\psi_d}{dt} - \omega_e \psi_q \\[1em]
 u_q = R_s i_q + \dfrac{d\psi_q}{dt} + \omega_e \psi_d
 \end{cases}
-}
 $$
 
 **逐项解读**：
@@ -115,19 +120,17 @@ $$
 将 $\psi_d$、$\psi_q$ 用电流和永磁磁链显式表达：
 
 $$
-\boxed{
 \begin{cases}
 \psi_d = L_d i_d + \psi_f \\
 \psi_q = L_q i_q
 \end{cases}
-}
 $$
 
 代入电压方程，得到以 $i_d$、$i_q$ 为状态变量的**电流动态方程**：
 
 $$
 \begin{cases}
-u_d = R_s i_d + L_d \dfrac{di_d}{dt} - \omega_e L_q i_q \\[10pt]
+u_d = R_s i_d + L_d \dfrac{di_d}{dt} - \omega_e L_q i_q \\[1em]
 u_q = R_s i_q + L_q \dfrac{di_q}{dt} + \omega_e (L_d i_d + \psi_f)
 \end{cases}
 $$
@@ -135,9 +138,8 @@ $$
 写成矩阵形式，便于控制器设计：
 
 $$
-\begin{bmatrix} u_d \\ u_q \end{bmatrix}
-=
-\begin{bmatrix} R_s + L_d s & -\omega_e L_q \\[4pt]
+\begin{bmatrix} u_d \\ u_q \end{bmatrix} =
+\begin{bmatrix} R_s + L_d s & -\omega_e L_q \\
 \omega_e L_d & R_s + L_q s
 \end{bmatrix}
 \begin{bmatrix} i_d \\ i_q \end{bmatrix}
@@ -199,12 +201,10 @@ $$
 ### 电流动态子系统
 
 $$
-\boxed{
 \begin{cases}
-\dfrac{di_d}{dt} = -\dfrac{R_s}{L_d} i_d + \dfrac{L_q}{L_d} n_p \omega_m i_q + \dfrac{1}{L_d} u_d \\[14pt]
+\dfrac{di_d}{dt} = -\dfrac{R_s}{L_d} i_d + \dfrac{L_q}{L_d} n_p \omega_m i_q + \dfrac{1}{L_d} u_d \\[1em]
 \dfrac{di_q}{dt} = -\dfrac{R_s}{L_q} i_q - \dfrac{L_d}{L_q} n_p \omega_m i_d - \dfrac{n_p \psi_f}{L_q} \omega_m + \dfrac{1}{L_q} u_q
 \end{cases}
-}
 $$
 
 ### 转速动态子系统
@@ -248,9 +248,8 @@ $$
 $L_d = L_q = L_s$ 时，电压和转矩方程退化为：
 
 $$
-\begin{bmatrix} u_d \\ u_q \end{bmatrix}
-=
-\begin{bmatrix} R_s + L_s s & -\omega_e L_s \\[4pt]
+\begin{bmatrix} u_d \\ u_q \end{bmatrix} =
+\begin{bmatrix} R_s + L_s s & -\omega_e L_s \\
 \omega_e L_s & R_s + L_s s
 \end{bmatrix}
 \begin{bmatrix} i_d \\ i_q \end{bmatrix}
@@ -305,4 +304,4 @@ MTPA 角度 $\beta^*$ 可通过 $\partial T_e / \partial \beta = 0$ 求解。
 1. 袁雷, 胡冰新, 魏克银, 陈姝. *现代永磁同步电机控制原理及MATLAB仿真*. 北京航空航天大学出版社, 2016.
 2. Pillay P, Krishnan R. Modeling, simulation, and analysis of permanent-magnet motor drives, Part I: The permanent-magnet synchronous motor drive. *IEEE Trans. Ind. Appl.*, 25(2): 265–273, 1989.
 3. 王成元, 夏加宽, 孙宜标. *现代电机控制技术*. 机械工业出版社, 2014.
-4. Krishnan R. *Permanent Magnet Synchronous and Brushless DC Motor Drives*. CRC Press, 2010.
+4. Pillay P, Krishnan R. Modeling of permanent magnet motor drives. *IEEE Trans. Ind. Electron.*, 35(4): 537–541, 1988.
