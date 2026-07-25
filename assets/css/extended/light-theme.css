@@ -30,7 +30,7 @@
     min-height: calc(100vh - 60px);
     background:
         linear-gradient(rgba(44, 62, 80, 0.75), rgba(52, 73, 94, 0.75)),
-        url('/images/bg-834.jpg') center/cover no-repeat;
+        url('/images/bg-834.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
