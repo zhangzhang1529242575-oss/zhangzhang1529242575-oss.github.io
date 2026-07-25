@@ -1,0 +1,59 @@
+{{- define "main" }}
+
+{{- if .Title }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{- if .Content }}
+  <div class="post-description">{{ .Content }}</div>
+  {{- end }}
+</header>
+{{- end }}
+
+{{- $pages := union .RegularPages .Sections }}
+{{- $paginator := .Paginate $pages }}
+
+<div class="life-grid">
+  {{- range $index, $page := $paginator.Pages }}
+  <article class="life-card">
+    <a class="life-card-link" href="{{ .Permalink }}">
+      {{- $cover := "" }}
+      {{- $images := .Resources.ByType "image" }}
+      {{- if $images }}
+        {{- $cover = ($images.GetMatch "cover*" | default (index $images 0)).RelPermalink }}
+      {{- end }}
+      {{- if $cover }}
+      <div class="life-card-img">
+        <img src="{{ $cover }}" alt="{{ .Title }}" loading="lazy">
+      </div>
+      {{- end }}
+      <div class="life-card-body">
+        <h2 class="life-card-title">{{ .Title }}</h2>
+        {{- if not (.Param "hideMeta") }}
+        <span class="life-card-date">
+          {{- .Date | time.Format ":date_long" }}
+        </span>
+        {{- end }}
+        {{- if .Summary }}
+        <p class="life-card-text">{{ .Summary | plainify | htmlUnescape | truncate 80 }}</p>
+        {{- end }}
+      </div>
+    </a>
+  </article>
+  {{- end }}
+</div>
+
+{{- if gt $paginator.TotalPages 1 }}
+<footer class="page-footer">
+  <nav class="pagination">
+    {{- if $paginator.HasPrev }}
+    <a class="prev" href="{{ $paginator.Prev.URL | absURL }}">«&nbsp;{{ i18n "prev_page" }}</a>
+    {{- end }}
+    {{- if $paginator.HasNext }}
+    <a class="next" href="{{ $paginator.Next.URL | absURL }}">{{ i18n "next_page" }}&nbsp;»</a>
+    {{- end }}
+  </nav>
+</footer>
+{{- end }}
+
+{{- end }}{{/* end main */}}

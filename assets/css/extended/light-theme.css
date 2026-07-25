@@ -203,3 +203,130 @@ body {
 .post-entry .entry-content {
     color: #444444;
 }
+
+/* ===========================
+   生活板块 — 照片卡片 & 网格
+   =========================== */
+
+/* ---- 列表页：卡片网格 ---- */
+.life-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.life-card {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.life-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.life-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.life-card-img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.life-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.life-card:hover .life-card-img img {
+    transform: scale(1.03);
+}
+
+.life-card-body {
+    padding: 1rem 1.1rem 1.2rem;
+}
+
+.life-card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.3rem;
+    color: #111;
+}
+
+.life-card-date {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.life-card-text {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0.5rem 0 0;
+    line-height: 1.5;
+}
+
+/* ---- 详情页：照片瀑布流（CSS columns，自适应横竖图） ---- */
+.life-single .life-gallery {
+    column-count: 3;
+    column-gap: 0.75rem;
+    margin: 2rem 0;
+}
+
+.life-gallery-item {
+    break-inside: avoid;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f3f4f6;
+    line-height: 0;
+}
+
+.life-gallery-item img {
+    width: 100%;
+    display: block;
+    transition: transform 0.2s;
+    cursor: zoom-in;
+}
+
+.life-gallery-item img:hover {
+    transform: scale(1.02);
+}
+
+/* 点击放大 */
+.life-gallery-item img.life-zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    z-index: 9999;
+    cursor: zoom-out;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.75);
+}
+
+@media (max-width: 768px) {
+    .life-single .life-gallery {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .life-single .life-gallery {
+        column-count: 1;
+    }
+}
