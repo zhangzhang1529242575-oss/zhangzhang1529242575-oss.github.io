@@ -25,12 +25,19 @@
   {{- $gallery := cond (gt (len $nonCover) 0) $nonCover $images }}
   <div class="life-gallery">
     {{- range $gallery }}
-    {{- $thumb := .Resize "600x" }}
+    {{- $thumb := .Resize "450x webp" }}
+    {{- $fallback := .Resize "450x jpg" }}
     <div class="life-gallery-item">
       <a href="{{ .RelPermalink }}" target="_blank">
-        <img src="{{ $thumb.RelPermalink }}"
-             alt="{{ .Name }}"
-             loading="lazy">
+        <picture>
+          <source srcset="{{ $thumb.RelPermalink }}" type="image/webp">
+          <img src="{{ $fallback.RelPermalink }}"
+               alt="{{ .Name }}"
+               width="{{ $fallback.Width }}"
+               height="{{ $fallback.Height }}"
+               loading="lazy"
+               decoding="async">
+        </picture>
       </a>
     </div>
     {{- end }}

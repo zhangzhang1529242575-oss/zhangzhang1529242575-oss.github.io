@@ -18,14 +18,20 @@
   <article class="life-card">
     <a class="life-card-link" href="{{ .Permalink }}">
       {{- $cover := "" }}
+      {{- $coverW := 0 }}
+      {{- $coverH := 0 }}
       {{- $images := .Resources.ByType "image" }}
       {{- if $images }}
         {{- $original := ($images.GetMatch "cover*" | default (index $images 0)) }}
-        {{- $cover = ($original.Resize "400x").RelPermalink }}
+        {{- $webp := $original.Resize "400x webp" }}
+        {{- $jpg := $original.Resize "400x jpg" }}
+        {{- $cover = $webp.RelPermalink }}
+        {{- $coverW = $jpg.Width }}
+        {{- $coverH = $jpg.Height }}
       {{- end }}
       {{- if $cover }}
       <div class="life-card-img">
-        <img src="{{ $cover }}" alt="{{ .Title }}" loading="lazy">
+        <img src="{{ $cover }}" alt="{{ .Title }}" width="{{ $coverW }}" height="{{ $coverH }}" loading="lazy" decoding="async">
       </div>
       {{- end }}
       <div class="life-card-body">
