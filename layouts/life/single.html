@@ -25,12 +25,13 @@
   {{- $gallery := cond (gt (len $nonCover) 0) $nonCover $images }}
   <div class="life-gallery">
     {{- range $gallery }}
+    {{- $thumb := .Resize "600x" }}
     <div class="life-gallery-item">
-      <img src="{{ .RelPermalink }}"
-           alt="{{ .Name }}"
-           loading="lazy"
-           onclick="this.classList.toggle('life-zoomed')"
-           style="cursor: zoom-in">
+      <a href="{{ .RelPermalink }}" target="_blank">
+        <img src="{{ $thumb.RelPermalink }}"
+             alt="{{ .Name }}"
+             loading="lazy">
+      </a>
     </div>
     {{- end }}
   </div>

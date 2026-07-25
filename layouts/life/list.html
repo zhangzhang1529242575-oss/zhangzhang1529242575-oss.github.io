@@ -20,7 +20,8 @@
       {{- $cover := "" }}
       {{- $images := .Resources.ByType "image" }}
       {{- if $images }}
-        {{- $cover = ($images.GetMatch "cover*" | default (index $images 0)).RelPermalink }}
+        {{- $original := ($images.GetMatch "cover*" | default (index $images 0)) }}
+        {{- $cover = ($original.Resize "400x").RelPermalink }}
       {{- end }}
       {{- if $cover }}
       <div class="life-card-img">
