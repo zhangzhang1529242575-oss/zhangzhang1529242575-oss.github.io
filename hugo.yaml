@@ -63,17 +63,17 @@ menu:
       name: 代表作
       url: /portfolio/
       weight: 25
-    - identifier: about
-      name: 关于
-      url: /about/
+    - identifier: search
+      name: 搜索
+      url: /search/
       weight: 40
     - identifier: life
       name: 生活
       url: /life/
       weight: 50
-    - identifier: search
-      name: 搜索
-      url: /search/
+    - identifier: about
+      name: 关于
+      url: /about/
       weight: 60
 
 # Markdown 配置
