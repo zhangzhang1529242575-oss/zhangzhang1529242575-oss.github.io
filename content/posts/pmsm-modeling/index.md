@@ -11,9 +11,9 @@ summary: "聚焦 dq 同步旋转坐标系，系统推导 PMSM 的电压、磁链
 
 永磁同步电机（Permanent Magnet Synchronous Motor, PMSM）具有高功率密度、高效率和宽调速范围等优势，已广泛应用于工业伺服、电动汽车、航空航天等领域。
 
-从控制的角度看，三相自然坐标系（abc）下的 PMSM 模型具有**非线性、强耦合、时变参数**的特点，直接在 abc 坐标系中设计控制器较为困难。通过坐标变换，将模型映射到与转子同步旋转的 dq 坐标系中——交流量变为直流量，时变电感变为常数，交叉耦合项物理意义明确——是矢量控制体系的理论基石。
+从控制的角度看，三相自然坐标系（abc）下的 PMSM 模型具有非线性、强耦合、时变参数的特点，直接在 abc 坐标系中设计控制器较为困难。通过坐标变换，将模型映射到与转子同步旋转的 dq 坐标系中——交流量变为直流量，时变电感变为常数，交叉耦合项物理意义明确——是矢量控制体系的理论基石。
 
-本文**侧重 dq 同步旋转坐标系**，依次推导电压方程、磁链方程、转矩方程和状态空间表达式，并讨论表贴式（SPMSM）与内置式（IPMSM）的建模差异。
+本文侧重 dq 同步旋转坐标系，依次推导电压方程、磁链方程、转矩方程和状态空间表达式，并讨论表贴式（SPMSM）与内置式（IPMSM）的建模差异。
 
 ## 核心思想
 
@@ -25,7 +25,7 @@ PMSM 数学建模的核心在于通过坐标变换实现解耦与降维。其核
 
 ## 基本假设
 
-建立数学模型时采用以下常用假设（袁雷教材 §2.1）：
+建立数学模型时采用以下常用假设 [1]：
 
 1. 三相定子绕组对称，轴线互差 $120^\circ$ 电角度；
 2. 忽略铁心饱和效应，磁路线性；
@@ -38,11 +38,11 @@ PMSM 数学建模的核心在于通过坐标变换实现解耦与降维。其核
 
 ## 1. 坐标变换（概要）
 
-从 abc 到 dq 需经过两步变换。此处给出结论，详细推导可参考袁雷教材 §2.2–§2.3。
+从 abc 到 dq 需经过两步变换。此处给出结论，详细推导可参考相关教材。
 
 ### 1.1 Clarke 变换：abc → αβ
 
-将三相静止坐标系变换到两相静止坐标系（α 轴与 a 轴重合，β 轴超前 90°），采用**幅值守恒**约束：
+将三相静止坐标系变换到两相静止坐标系（α 轴与 a 轴重合，β 轴超前 90°），采用幅值守恒约束：
 
 $$
 \begin{bmatrix} f_\alpha \\ f_\beta \end{bmatrix}
@@ -67,19 +67,19 @@ $$
 \begin{bmatrix} f_\alpha \\ f_\beta \end{bmatrix}
 $$
 
-**变换的物理本质**：Clarke + Park 相当于将三相交流绕组等效为一套固定在转子上的正交直流绕组——从转子的视角看，定子电流、电压在稳态时均为直流量。
+变换的物理本质：Clarke + Park 相当于将三相交流绕组等效为一套固定在转子上的正交直流绕组——从转子的视角看，定子电流、电压在稳态时均为直流量。
 
 ---
 
 ## 2. 自然坐标系（abc）模型（简略）
 
-为保持推导完整性，简要列出 abc 坐标系下的基本方程，详细展开见袁雷教材 §2.1。
+为保持推导完整性，简要列出 abc 坐标系下的基本方程。
 
-**电压方程向量形式**：
+电压方程向量形式：
 
 $$\boldsymbol{u}_{abc} = R_s \boldsymbol{i}_{abc} + \frac{d}{dt}\boldsymbol{\psi}_{abc}$$
 
-**磁链方程**：
+磁链方程：
 
 $$\boldsymbol{\psi}_{abc} = \boldsymbol{L}_{abc}(\theta_e) \boldsymbol{i}_{abc} + \boldsymbol{\psi}_{f,abc}(\theta_e)$$
 
@@ -104,7 +104,7 @@ u_q = R_s i_q + \dfrac{d\psi_q}{dt} + \omega_e \psi_d
 \end{cases}
 $$
 
-**逐项解读**：
+逐项解读：
 
 | 项 | 物理含义 |
 |---|---|
@@ -113,7 +113,7 @@ $$
 | $-\omega_e \psi_q$ | d 轴运动电动势——q 轴磁链在旋转中"切割"d 轴绕组产生 |
 | $+\omega_e \psi_d$ | q 轴运动电动势——d 轴磁链在旋转中"切割"q 轴绕组产生 |
 
-其中 $-\omega_e \psi_q$ 和 $+\omega_e \psi_d$ 是 dq 轴之间的**交叉耦合项**——它们使 d、q 轴不能完全独立控制，是矢量控制中需要前馈解耦的根本原因。
+其中 $-\omega_e \psi_q$ 和 $+\omega_e \psi_d$ 是 dq 轴之间的交叉耦合项——它们使 d、q 轴不能完全独立控制，是矢量控制中需要前馈解耦的根本原因。
 
 ### 3.2 磁链方程
 
@@ -126,7 +126,7 @@ $$
 \end{cases}
 $$
 
-代入电压方程，得到以 $i_d$、$i_q$ 为状态变量的**电流动态方程**：
+代入电压方程，得到以 $i_d$、$i_q$ 为状态变量的电流动态方程：
 
 $$
 \begin{cases}
@@ -149,8 +149,8 @@ $$
 
 其中 $s = d/dt$ 为微分算子。
 
-**关键观察**：
-- 交叉耦合项 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 与转速成正比——**转速越高，耦合越强**；
+关键观察：
+- 交叉耦合项 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 与转速成正比——转速越高，耦合越强；
 - 永磁反电动势 $\omega_e \psi_f$ 只出现在 q 轴——与转速成正比，是电机发电效应的来源；
 - 当 $\omega_e = 0$（静止），模型退化为两路独立的 RL 电路——d、q 轴完全解耦。
 
@@ -165,7 +165,7 @@ T_e = \frac{3}{2} n_p (\psi_d i_q - \psi_q i_d)
 }
 $$
 
-**转矩的两分量分解**：
+转矩的两分量分解：
 
 $$
 T_e = \underbrace{\frac{3}{2} n_p \psi_f i_q}_{\text{永磁转矩 } T_{pm}} \;+\; \underbrace{\frac{3}{2} n_p (L_d - L_q) i_d i_q}_{\text{磁阻转矩 } T_{rel}}
@@ -176,8 +176,8 @@ $$
 | 永磁转矩 $T_{pm}$ | $\frac{3}{2}n_p \psi_f i_q$ | 永磁磁场 ↔ q 轴电流 | 始终存在 |
 | 磁阻转矩 $T_{rel}$ | $\frac{3}{2}n_p (L_d - L_q)i_d i_q$ | dq 轴磁阻不对称（凸极效应） | $L_d \neq L_q$ 时存在 |
 
-**磁阻转矩的符号**（以 $i_q > 0$ 电动状态为例）：
-- 若 $L_d < L_q$（IPMSM 常见情况），$(L_d - L_q) < 0$，施加负向 $i_d$（$i_d < 0$）使 $i_d i_q < 0$ → 磁阻转矩为正，**贡献电动转矩**；
+磁阻转矩的符号（以 $i_q > 0$ 电动状态为例）：
+- 若 $L_d < L_q$（IPMSM 常见情况），$(L_d - L_q) < 0$，施加负向 $i_d$（$i_d < 0$）使 $i_d i_q < 0$ → 磁阻转矩为正，贡献电动转矩；
 - 若 $L_d > L_q$（少数设计），则需正向 $i_d$ 利用磁阻转矩。
 
 ### 3.4 运动方程
@@ -196,7 +196,7 @@ $$
 
 ## 4. 状态空间表达式
 
-选取状态变量 $\boldsymbol{x} = [i_d, i_q, \omega_m]^T$，控制输入 $\boldsymbol{u} = [u_d, u_q]^T$，扰动输入 $T_L$，得到 PMSM 的**非线性状态空间模型**（袁雷教材 §2.4）：
+选取状态变量 $\boldsymbol{x} = [i_d, i_q, \omega_m]^T$，控制输入 $\boldsymbol{u} = [u_d, u_q]^T$，扰动输入 $T_L$，得到 PMSM 的非线性状态空间模型 [2][4]：
 
 ### 电流动态子系统
 
@@ -217,16 +217,16 @@ $$
 
 状态方程中出现了三类非线性项：
 
-1. **乘积项** $\omega_m i_d$、$\omega_m i_q$——转速 × 电流，属于**双线性（bilinear）非线性**；
-2. **乘积项** $i_d i_q$——出现在转矩方程中（IPMSM），属于**二次非线性**；
-3. **参数不确定性**——$R_s$ 随温度变化，$L_d$、$L_q$ 随磁饱和变化，$\psi_f$ 随温度变化。
+1. 乘积项 $\omega_m i_d$、$\omega_m i_q$——转速 × 电流，属于双线性（bilinear）非线性；
+2. 乘积项 $i_d i_q$——出现在转矩方程中（IPMSM），属于二次非线性；
+3. 参数不确定性——$R_s$ 随温度变化，$L_d$、$L_q$ 随磁饱和变化，$\psi_f$ 随温度变化。
 
 这些非线性是 PMSM 高性能控制的难点所在——PI 控制器只在特定工作点附近有效，大范围调速和负载突变时性能下降。这自然地引出了后续的控制进阶话题：
 
-- **前馈解耦**：抵消 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 交叉耦合项；
-- **滑模控制（SMC）**：对参数摄动和外部扰动具有完全鲁棒性；
-- **模型预测控制（MPC）**：显式利用非线性模型进行滚动优化；
-- **自抗扰控制（ADRC）**：将非线性耦合视为"总扰动"进行估计和补偿。
+- 前馈解耦：抵消 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 交叉耦合项；
+- 滑模控制（SMC）：对参数摄动和外部扰动具有完全鲁棒性；
+- 模型预测控制（MPC）：显式利用非线性模型进行滚动优化；
+- 自抗扰控制（ADRC）：将非线性耦合视为"总扰动"进行估计和补偿。
 
 ---
 
@@ -241,7 +241,7 @@ $$
 | 电感关系 | $L_d = L_q = L_s$ | 通常 $L_q > L_d$ |
 | 凸极比 $\rho = L_q/L_d$ | $\rho = 1$ | $\rho > 1$（典型 1.5~3） |
 | 转矩组成 | 仅永磁转矩 | 永磁转矩 + 磁阻转矩 |
-| $i_d = 0$ 控制 | MTPA 等价于 $i_d = 0$ | $i_d = 0$ **不是** MTPA，需负向 $i_d$ |
+| $i_d = 0$ 控制 | MTPA 等价于 $i_d = 0$ | $i_d = 0$ 不是 MTPA，需负向 $i_d$ |
 
 ### SPMSM：简化模型
 
@@ -265,7 +265,7 @@ $$
 
 ### IPMSM：MTPA 控制原理
 
-IPMSM 的磁阻转矩为额外自由度。在一定 $T_e$ 需求下，寻找使电流幅值 $I_s = \sqrt{i_d^2 + i_q^2}$ 最小的 $(i_d, i_q)$ 组合，即为**最大转矩电流比（MTPA）**控制（袁雷教材 §3.3）。
+IPMSM 的磁阻转矩为额外自由度。在一定 $T_e$ 需求下，寻找使电流幅值 $I_s = \sqrt{i_d^2 + i_q^2}$ 最小的 $(i_d, i_q)$ 组合，即为最大转矩电流比（MTPA）控制 [3]。
 
 由约束优化问题 $\min I_s^2 = i_d^2 + i_q^2$ s.t. $T_e = \frac{3}{2}n_p[\psi_f i_q + (L_d - L_q)i_d i_q]$，利用拉格朗日乘子法得到 MTPA 条件：
 
@@ -277,6 +277,14 @@ $$
 
 （取负号是因为 IPMSM 中 $L_d < L_q$，$i_d$ 应为负值以产生正向磁阻转矩。）
 
+上式以 $i_q$ 为自变量给出 MTPA 轨迹。若以电流幅值 $I_s = \sqrt{i_d^2 + i_q^2}$ 表示，代入 $i_q^2 = I_s^2 - i_d^2$，整理得 [3]：
+
+$$
+\boxed{
+i_d = \frac{\psi_f}{4(L_q - L_d)} - \sqrt{\frac{\psi_f^2}{16(L_q - L_d)^2} + \frac{I_s^2}{2}},\quad i_q = \sqrt{I_s^2 - i_d^2}
+}
+$$
+
 或以电流矢量角 $\beta$ 描述（$i_d = -I_s \sin\beta$, $i_q = I_s \cos\beta$，$\beta$ 为电流超前 q 轴的角度）：
 
 $$
@@ -285,17 +293,20 @@ $$
 
 MTPA 角度 $\beta^*$ 可通过 $\partial T_e / \partial \beta = 0$ 求解。
 
+![电流限制圆、电压限制椭圆与 MTPA 轨迹](/images/morimoto1994_fig1_cropped.png)
+*图：电流限制圆、电压限制椭圆与 MTPA 轨迹（$i_d$-$i_q$ 平面）。来源：Morimoto et al., 1994 [3]。*
+
 ---
 
 ## 6. 小结
 
 本文聚焦 dq 同步旋转坐标系，建立了 PMSM 的完整数学模型。核心结论：
 
-1. **坐标变换是桥梁**：Clarke + Park 将三相交流系统等效为 dq 直流系统，使参数定常、变量直流量化；
-2. **dq 电压方程**：$u_d = R_s i_d + L_d \frac{di_d}{dt} - \omega_e L_q i_q$，$u_q = R_s i_q + L_q \frac{di_q}{dt} + \omega_e(L_d i_d + \psi_f)$——交叉耦合项 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 是前馈解耦的直接依据；
-3. **转矩方程**：$T_e = \frac{3}{2}n_p[\psi_f i_q + (L_d - L_q)i_d i_q]$——SPMSM 仅永磁转矩（$\propto i_q$），IPMSM 含额外磁阻转矩（利用凸极性）；
-4. **非线性特征**：乘积项 $\omega_m i_d$、$\omega_m i_q$、$i_d i_q$ 使 PMSM 为双线性非线性系统——这是研究滑模控制、MPC、ADRC 等先进控制方法的直接动机；
-5. **SPMSM vs IPMSM**：前者模型简洁，$i_d=0$ 即 MTPA；后者需负向 $i_d$ 利用磁阻转矩，数学模型和控制策略均更复杂。
+1. 坐标变换是桥梁：Clarke + Park 将三相交流系统等效为 dq 直流系统，使参数定常、变量直流量化；
+2. dq 电压方程：$u_d = R_s i_d + L_d \frac{di_d}{dt} - \omega_e L_q i_q$，$u_q = R_s i_q + L_q \frac{di_q}{dt} + \omega_e(L_d i_d + \psi_f)$——交叉耦合项 $-\omega_e L_q i_q$ 和 $+\omega_e L_d i_d$ 是前馈解耦的直接依据；
+3. 转矩方程：$T_e = \frac{3}{2}n_p[\psi_f i_q + (L_d - L_q)i_d i_q]$——SPMSM 仅永磁转矩（$\propto i_q$），IPMSM 含额外磁阻转矩（利用凸极性）；
+4. 非线性特征：乘积项 $\omega_m i_d$、$\omega_m i_q$、$i_d i_q$ 使 PMSM 为双线性非线性系统——这是研究滑模控制、MPC、ADRC 等先进控制方法的直接动机；
+5. SPMSM vs IPMSM：前者模型简洁，$i_d=0$ 即 MTPA；后者需负向 $i_d$ 利用磁阻转矩，数学模型和控制策略均更复杂。
 
 熟练掌握 dq 坐标系下的 PMSM 模型，是学习矢量控制（FOC）、弱磁控制、无传感器控制以及各类先进控制算法的基本前提。
 
@@ -303,5 +314,6 @@ MTPA 角度 $\beta^*$ 可通过 $\partial T_e / \partial \beta = 0$ 求解。
 
 1. 袁雷, 胡冰新, 魏克银, 陈姝. *现代永磁同步电机控制原理及MATLAB仿真*. 北京航空航天大学出版社, 2016.
 2. Pillay P, Krishnan R. Modeling, simulation, and analysis of permanent-magnet motor drives, Part I: The permanent-magnet synchronous motor drive. *IEEE Trans. Ind. Appl.*, 25(2): 265–273, 1989.
-3. 王成元, 夏加宽, 孙宜标. *现代电机控制技术*. 机械工业出版社, 2014.
-4. Pillay P, Krishnan R. Modeling of permanent magnet motor drives. *IEEE Trans. Ind. Electron.*, 35(4): 537–541, 1988.
+3. Morimoto S, Sanada M, Takeda Y. Wide-speed operation of interior permanent magnet synchronous motors with high-performance current regulator. *IEEE Trans. Ind. Appl.*, 30(4): 920–926, 1994.
+4. 王成元, 夏加宽, 孙宜标. *现代电机控制技术*. 机械工业出版社, 2014.
+5. Pillay P, Krishnan R. Modeling of permanent magnet motor drives. *IEEE Trans. Ind. Electron.*, 35(4): 537–541, 1988.
