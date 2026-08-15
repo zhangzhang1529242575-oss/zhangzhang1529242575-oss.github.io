@@ -3,3 +3,7 @@ public/
 resources/
 node_modules/
 resources/_gen/
+
+# 本地素材：完整公示PDF（含他人隐私）与参考论文，不推送到公开仓库
+/award/
+/ref/

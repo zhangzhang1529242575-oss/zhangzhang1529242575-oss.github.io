@@ -13,7 +13,7 @@ hideMeta: true
 - **作者**：**Zhang Zhang**, Xiaodong Yang, Weiyu Wang, Kaiwen Chen, Norbert Chow Cheung, Jianfei Pan
 - **期刊**：*IEEE Transactions on Industrial Electronics*, vol. 71, no. 10, pp. 11978–11988, 2024
 - **DOI**：[10.1109/TIE.2023.3347845](https://doi.org/10.1109/TIE.2023.3347845)
-- **引用**：Google Scholar 118+ 次引用
+- **引用**：Google Scholar 142+ 次引用
 - **贡献**：提出基于指数函数的新型自适应滑模趋近律 (ASMRL)，解决了滑模控制中收敛速度与抖振水平之间的固有矛盾
 
 **2. A Dynamic Convergence Second-Order Sliding Mode Control Structure for PMSM with an Observer Based on a Novel Sliding Mode Reaching Law**
@@ -21,7 +21,7 @@ hideMeta: true
 - **作者**：**Zhang Zhang**, Zerong Chen, Neng Li, Kaiwen Chen, N.C. Cheung, Jianfei Pan
 - **期刊**：*Control Engineering Practice*, vol. 164, 106504, 2025
 - **DOI**：[10.1016/j.conengprac.2025.106504](https://doi.org/10.1016/j.conengprac.2025.106504)
-- **引用**：Google Scholar 6+ 次引用
+- **引用**：Google Scholar 10+ 次引用
 - **贡献**：提出动态收敛二阶滑模控制结构 (SOSMC) 与新型滑模扰动观测器 (SMDO)，实现抗扰能力与抖振抑制的平衡
 
 **3. Decoupled Current-Transformation Control Design for a Dual-Rotor PMSM Drive with Integrated Winding**
@@ -39,30 +39,6 @@ hideMeta: true
 - **会议**：*2024 10th International Conference on Power Electronics Systems and Applications (PESA)*, Hong Kong
 - **DOI**：[10.1109/PESA62148.2024.10594857](https://doi.org/10.1109/PESA62148.2024.10594857)
 - **贡献**：将 ASMRL 方法从旋转电机推广至永磁直线同步电机 (PMSLM)，实现跨拓扑验证
-
----
-
-## 获奖荣誉
-
-| 奖项 | 时间 | 说明 |
-|------|------|------|
-| 🏆 **国家奖学金** (China National Scholarship) | 2024–2025 | |
-| 🎓 **深圳大学优秀毕业生** (Outstanding Graduate) | 2025 | 深圳大学校级优秀毕业生称号 |
-| 🥇 **科研标兵** (Research Excellence Award) | 2023–2024 | 深圳大学，每年每学院仅评选一人 |
-| 📝 **深圳大学机电与控制工程学院优秀毕业论文** | 2026 | |
-| 📜 **校级奖学金** | 2018–2025 | 在校期间每年均获得奖学金 |
-
----
-
-## 学术服务
-
-担任以下国际期刊审稿人：
-
-- *IEEE Transactions on Industrial Electronics* (TIE)
-- *IEEE Transactions on Industrial Informatics* (TII)
-- *IEEE Journal of Emerging and Selected Topics in Power Electronics* (JESTPE)
-- *Electrical Engineering*
-- *Robotics and Intelligent Automation* (RIA)
 
 ---
 

@@ -18,7 +18,7 @@ params:
 
   # 个人信息
   author: 张章
-  description: 电机控制博士生，记录学习与研究心得
+  description: 香港理工大学 (The Hong Kong Polytechnic University) 电力电子工程系 (Department of Electrical and Electronic Engineering) 博士生，记录学习与研究心得
 
   # 首页 — 自定义 Hero 设计
   profileMode:
@@ -62,7 +62,7 @@ menu:
     - identifier: portfolio
       name: 代表作
       url: /portfolio/
-      weight: 25
+      weight: 55
     - identifier: search
       name: 搜索
       url: /search/
