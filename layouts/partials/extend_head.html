@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {{ end }}
 
-{{/* 不蒜子访问计数 */}}
+{{/* 不蒜子访问计数：仅首页与关于页加载 */}}
+{{ if or .IsHome (eq .RelPermalink "/about/") }}
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+{{ end }}
 

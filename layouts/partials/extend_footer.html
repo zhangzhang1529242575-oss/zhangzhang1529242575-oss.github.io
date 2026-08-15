@@ -1,4 +1,4 @@
-{{/* 不蒜子访问计数显示（数据由 busuanzi 脚本填充） */}}
+{{ if or .IsHome (eq .RelPermalink "/about/") }}
 <div class="busuanzi-count">
   <span id="busuanzi_container_site_pv" style="display: none;">
     本站总访问量 <span id="busuanzi_value_site_pv"></span> 次
@@ -7,3 +7,4 @@
     &nbsp;·&nbsp;访客数 <span id="busuanzi_value_site_uv"></span> 人
   </span>
 </div>
+{{ end }}
