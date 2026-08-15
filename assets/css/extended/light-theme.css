@@ -330,3 +330,13 @@ body {
         column-count: 1;
     }
 }
+
+/* ---- 不蒜子访问计数 ---- */
+.busuanzi-count {
+    max-width: var(--main-width);
+    margin: -12px auto 20px;
+    padding: 0 16px;
+    font-size: 13px;
+    color: var(--secondary);
+    text-align: center;
+}
