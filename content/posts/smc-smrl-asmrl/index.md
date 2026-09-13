@@ -8,13 +8,15 @@ summary: "用直观方式介绍一阶滑模控制（SMC）、滑模趋近律（S
 ---
 
 
+滑模控制（Sliding Mode Control, SMC）起源于 20 世纪 50—60 年代苏联学者 S. V. Emelyanov 及其团队所发展的变结构系统（Variable Structure Systems, VSS）理论 [1]，而 Vadim I. Utkin 随后在现代滑模控制理论体系的建立过程中发挥了核心作用，尤其是在多维滑模和等效控制方法等方面作出了奠基性贡献 [2]。值得注意的是，Utkin 本身接受的是典型的机电工程教育，早期学习内容包括电机、变压器和机电继电器等；但在大学期间，一门仅有约 10 次课的控制理论课程让他深深感受到“数学概念与实际工程问题之间优美而严密的结合”，由此改变了自己的科研方向，并最终投身于控制理论研究。此后数十年间，Utkin 将早期对继电器切换和变结构系统中滑动现象的认识，逐步发展为一套可以进行严格分析、系统设计和稳定性证明的鲁棒非线性控制方法学，为现代滑模控制理论及其在电机、电力电子、机器人等领域的广泛应用奠定了基础。Vadim I. Utkin 教授于 2022 年 9 月 18 日去世，但**他所建立和推动发展的滑模控制理论至今仍深刻影响着现代控制领域**。
+
 > 本文希望用尽量直观的方式介绍一阶滑模控制（Sliding Mode Control, SMC）的基本思想，并进一步说明滑模趋近律（Sliding Mode Reaching Law, SMRL）以及自适应滑模趋近律（Adaptive Sliding Mode Reaching Law, ASMRL）的设计逻辑。重点不是复杂公式推导，而是理解一个核心问题：**系统距离滑模面很远和很近时，是否应该采用相同的趋近策略？**
 
 ---
 
 ## 1. 什么是滑模控制？
 
-滑模控制（SMC）是一类典型的非线性鲁棒控制方法，其思想源头可追溯到苏联学者在 1950 年代开创的**变结构控制（Variable Structure Control, VSC）** [1]。需要说明的是，变结构控制与滑模控制并不完全等同：变结构控制强调的是“结构切换”——控制律不是时间的连续函数，而是随系统状态所处区域的不同，在若干连续控制律之间（可能以极高频率）切换；滑模控制则是变结构控制中最重要的一种工作模式，它进一步要求系统状态被“抓住”在预先设计的切换面上并沿其滑动，形成**滑动模态（sliding mode）**，从而获得对参数摄动和匹配扰动的强鲁棒性 [2]。换言之，变结构控制提供了“切换”这一设计框架，滑模控制则规定了切换后的具体运动形态——滑动模态。
+滑模控制（SMC）是一类典型的非线性鲁棒控制方法。需要说明的是，**变结构控制（Variable Structure Control, VSC）**与滑模控制并不完全等同：变结构控制强调的是“结构切换”——控制律不是时间的连续函数，而是随系统状态所处区域的不同，在若干连续控制律之间（可能以极高频率）切换；滑模控制则是变结构控制中最重要的一种工作模式，它进一步要求系统状态被“抓住”在预先设计的切换面上并沿其滑动，形成**滑动模态（sliding mode）**，从而获得对参数摄动和匹配扰动的强鲁棒性 [3]。换言之，变结构控制提供了“切换”这一设计框架，滑模控制则规定了切换后的具体运动形态——滑动模态。
 
 值得指出的是，苏联学者最初研究变结构控制的动机之一，是把它应用于**导弹制导**等强非线性、强不确定性系统。在导弹拦截飞行目标的问题中，制导律本质上就是一个非线性控制律——需要让导弹在剧烈气动参数变化、目标机动、外部扰动等条件下，依然保持视线角速率稳定收敛到零。变结构控制所具备的对参数摄动和匹配扰动的不变性，恰好契合了这类场景对鲁棒性的极高要求。下图给出导弹拦截目标的制导几何示意：
 
@@ -117,7 +119,7 @@ $$
 
 > **系统应该以怎样的速度向滑模面运动？**
 
-Gao 和 Hung 在经典工作中提出了 **reaching law method** [3]，即不只是判断 $s\dot{s}<0$，而是进一步直接规定滑模变量 $s$ 的动态，其基本思想可以写成
+Gao 和 Hung 在经典工作中提出了 **reaching law method** [4]，即不只是判断 $s\dot{s}<0$，而是进一步直接规定滑模变量 $s$ 的动态，其基本思想可以写成
 
 $$
 \dot{s}=F(s).
@@ -361,7 +363,7 @@ $$
   <img src="/images/smc-smrl-asmrl/fig2-asmrl-reaching-law.png"
        alt="ASMRL 分区趋近律相轨迹图：−k₂(eᵇᴱ−1)sgn(s) 项作用下的 SMC 过程"
        loading="lazy" />
-  <figcaption><strong>图 2</strong>　带 −k₂(eᵇᴱ−1)sgn(s) 项的 SMC 过程 [4]。红色相轨迹从上方的初始状态出发，进入加速区后快速趋近原点附近的滑模面 s = ce + ė = 0。</figcaption>
+  <figcaption><strong>图 2</strong>　带 −k₂(eᵇᴱ−1)sgn(s) 项的 SMC 过程 [5]。红色相轨迹从上方的初始状态出发，进入加速区后快速趋近原点附近的滑模面 s = ce + ė = 0。</figcaption>
 </figure>
 
 也就是说，$|s|\uparrow\Rightarrow\text{strong reaching}$，而 $|s|\downarrow\Rightarrow\text{smooth reaching}$。这就是分区概念和自适应趋近律之间最直接的联系。
@@ -444,15 +446,16 @@ $$
 
 这也为进一步研究更高性能的自适应滑模控制、有限时间滑模控制、高阶滑模控制以及电机驱动中的鲁棒控制提供了一个非常直观的出发点。
 
-对滑模变结构控制更系统的理论学习与 MATLAB 仿真实现，可参阅教材 [5]；对变结构控制理论发展脉络的完整综述，可参阅文献 [6]。
+对滑模变结构控制更系统的理论学习与 MATLAB 仿真实现，可参阅教材 [6]；对变结构控制理论发展脉络的完整综述，可参阅文献 [7]。
 
 ---
 
 ## 参考文献
 
 1. Emel'yanov SV. A method to obtain complex regulation laws using only the error signal or the regulated coordinate and its first derivatives. *Avtomat. i Telemekh.*, 18(10): 873–885, 1957.
-2. Utkin VI. *Sliding Modes and Their Application in Variable Structure Systems*. Moscow: Mir Publishers, 1978.
-3. Gao W, Hung JC. Variable structure control of nonlinear systems: A new approach. *IEEE Trans. Ind. Electron.*, 40(1): 45–55, 1993.
-4. Zhang Z, Yang X, Wang W, Chen K, Cheung NC, Pan J. Enhanced Sliding Mode Control for PMSM Speed Drive Systems Using a Novel Adaptive Sliding Mode Reaching Law Based on Exponential Function. *IEEE Trans. Ind. Electron.*, 71(10): 11978–11988, 2024.
-5. 刘金琨. *滑模变结构控制 MATLAB 仿真（第3版）：基本理论与设计方法*. 清华大学出版社, 2015.
-6. Hung JY, Gao W, Hung JC. Variable structure control: A survey. *IEEE Trans. Ind. Electron.*, 40(1): 2–22, 1993.
+2. Poznyak AS, Orlov YV. Vadim I. Utkin and sliding mode control. *J. Franklin Inst.*, 360(17): 12892–12921, 2023.
+3. Utkin VI. *Sliding Modes and Their Application in Variable Structure Systems*. Moscow: Mir Publishers, 1978.
+4. Gao W, Hung JC. Variable structure control of nonlinear systems: A new approach. *IEEE Trans. Ind. Electron.*, 40(1): 45–55, 1993.
+5. Zhang Z, Yang X, Wang W, Chen K, Cheung NC, Pan J. Enhanced Sliding Mode Control for PMSM Speed Drive Systems Using a Novel Adaptive Sliding Mode Reaching Law Based on Exponential Function. *IEEE Trans. Ind. Electron.*, 71(10): 11978–11988, 2024.
+6. 刘金琨. *滑模变结构控制 MATLAB 仿真（第3版）：基本理论与设计方法*. 清华大学出版社, 2015.
+7. Hung JY, Gao W, Hung JC. Variable structure control: A survey. *IEEE Trans. Ind. Electron.*, 40(1): 2–22, 1993.
