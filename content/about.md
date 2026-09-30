@@ -12,6 +12,7 @@ hideMeta: true
 
 - **多端口电机建模与控制**：集成绕组双端口/多端口电机拓扑建模，双频电流驱动与解耦控制
 - **鲁棒控制算法**：滑模控制 (SMC) 及其变体（自适应趋近律、高阶滑模、超螺旋观测器），扰动估计与补偿
+- **新型逆变器驱动**：九开关逆变器驱动，调制算法设计，模型预测控制等
 
 ### 获奖荣誉
 
@@ -48,7 +49,14 @@ hideMeta: true
 
 欢迎交流电机控制相关话题！
 
-- 📧 Email: eeezhang.zhang@connect.polyu.hk
-- 🔬 [ORCID: 0009-0009-9450-363X](https://orcid.org/0009-0009-9450-363X)
-- 📚 [ResearchGate](https://www.researchgate.net/profile/Zhang-Zhang-242)
-- 📄 [个人代表作](/portfolio/)
+<div class="contact-grid">
+<ul class="contact-col">
+<li>📧 Email: eeezhang.zhang@connect.polyu.hk</li>
+<li>🔬 <a href="https://orcid.org/0009-0009-9450-363X">ORCID: 0009-0009-9450-363X</a></li>
+<li>📚 <a href="https://www.researchgate.net/profile/Zhang-Zhang-242">ResearchGate</a></li>
+</ul>
+<ul class="contact-col">
+<li>🌐 <a href="https://jiangmy97.github.io/">课题组网站</a></li>
+<li>🏛️ <a href="https://www.polyu.edu.hk/rcev/">香港理工大学电动车辆研究中心 (RCEV)</a></li>
+</ul>
+</div>
