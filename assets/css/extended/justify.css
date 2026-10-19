@@ -1,0 +1,9 @@
+/* ===========================
+   文章正文两端对齐
+   =========================== */
+
+.post-content p,
+.post-content li {
+    text-align: justify;
+    text-justify: inter-ideograph;
+}

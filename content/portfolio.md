@@ -13,7 +13,7 @@ hideMeta: true
 - **作者**：**Zhang Zhang**, Xiaodong Yang, Weiyu Wang, Kaiwen Chen, Norbert Chow Cheung, Jianfei Pan
 - **期刊**：*IEEE Transactions on Industrial Electronics*, vol. 71, no. 10, pp. 11978–11988, 2024
 - **DOI**：[10.1109/TIE.2023.3347845](https://doi.org/10.1109/TIE.2023.3347845)
-- **引用**：Google Scholar 142+ 次引用
+- **引用**：Google Scholar 160+ 次引用
 - **贡献**：提出基于指数函数的新型自适应滑模趋近律 (ASMRL)，解决了滑模控制中收敛速度与抖振水平之间的固有矛盾
 
 **2. A Dynamic Convergence Second-Order Sliding Mode Control Structure for PMSM with an Observer Based on a Novel Sliding Mode Reaching Law**
@@ -29,7 +29,7 @@ hideMeta: true
 - **作者**：**Zhang Zhang**, Mingyuan Jiang, Zixu Dong, Zhouyang Zhang, Shuangxia Niu, K.T. Chau
 - **期刊**：*IEEE Transactions on Magnetics*, 2026
 - **DOI**：[10.1109/TMAG.2026.3698454](https://doi.org/10.1109/TMAG.2026.3698454)
-- **贡献**：提出集成绕组双转子 PMSM 的解耦电流变换控制方法，实现单逆变器驱动的双转子独立控制
+- **贡献**：提出集成绕组双转子 PMSM 的解耦电流变换控制方法，实现 IW-DMP 驱动系统控制的基础研究
 
 ### 会议论文
 
