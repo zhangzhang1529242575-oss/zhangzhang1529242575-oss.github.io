@@ -52,8 +52,8 @@ hideMeta: true
 <div class="contact-grid">
 <ul class="contact-col">
 <li>📧 Email: eeezhang.zhang@connect.polyu.hk</li>
-<li>🔬 <a href="https://orcid.org/0009-0009-9450-363X">ORCID: 0009-0009-9450-363X</a></li>
 <li>📚 <a href="https://www.researchgate.net/profile/Zhang-Zhang-242">ResearchGate</a></li>
+<li>🔬 <a href="https://orcid.org/0009-0009-9450-363X">ORCID: 0009-0009-9450-363X</a></li>
 </ul>
 <ul class="contact-col">
 <li>🌐 <a href="https://jiangmy97.github.io/">课题组网站</a></li>
