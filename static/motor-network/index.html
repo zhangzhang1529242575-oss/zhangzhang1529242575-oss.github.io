@@ -1,0 +1,2367 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>电机研究网络 · 设计 / 驱动 / 控制</title>
+  <style>
+:root {
+  --bg: #04060b;
+  --bg-soft: #080d16;
+  --panel: rgba(11, 16, 27, 0.82);
+  --panel-solid: #0b101b;
+  --line: rgba(148, 163, 184, 0.13);
+  --line-strong: rgba(148, 163, 184, 0.22);
+  --text: #e8eef8;
+  --muted: #93a4bc;
+  --dim: #5c6b81;
+  --design: #22d3ee;
+  --drive: #fbbf24;
+  --control: #a78bfa;
+  --system: #34d399;
+  --advise: #fb923c;
+  --collab: #38bdf8;
+  --team: #64748b;
+  --topic: #c084fc;
+  --gold: #f5c451;
+  --radius: 14px;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --font: "Inter", "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 760px at 12% -12%, rgba(34, 211, 238, 0.10), transparent 62%),
+    radial-gradient(900px 700px at 92% 112%, rgba(167, 139, 250, 0.10), transparent 62%),
+    radial-gradient(800px 600px at 60% 50%, rgba(56, 189, 248, 0.035), transparent 70%);
+  z-index: 0;
+}
+
+button { font-family: inherit; }
+
+/* ---------------- top bar ---------------- */
+.topbar {
+  position: relative;
+  z-index: 10;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(10, 15, 25, 0.94), rgba(8, 12, 20, 0.78));
+  backdrop-filter: blur(14px);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; min-width: 250px; }
+
+.mark {
+  width: 36px; height: 36px;
+  border-radius: 11px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 17px; letter-spacing: -0.5px;
+  color: #04121a;
+  background: conic-gradient(from 200deg, #22d3ee, #38bdf8 35%, #a78bfa 70%, #fbbf24 100%);
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.brand-text h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: 0.02em; }
+.brand-text span {
+  display: block; font-size: 9.5px; letter-spacing: 0.22em; color: var(--dim);
+  margin-top: 3px; font-weight: 600;
+}
+
+.stats { display: flex; align-items: center; gap: 20px; flex: 1; justify-content: center; }
+.stat { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.stat b { font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.stat span { font-size: 11px; color: var(--dim); }
+.stat + .stat { padding-left: 20px; border-left: 1px solid var(--line); }
+
+.top-actions { display: flex; gap: 8px; }
+
+.btn {
+  height: 34px; padding: 0 14px;
+  border-radius: 9px; border: 1px solid var(--line-strong);
+  background: rgba(148, 163, 184, 0.06);
+  color: var(--muted); font-size: 12.5px; font-weight: 550;
+  cursor: pointer; transition: 0.18s ease;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn:hover { color: var(--text); border-color: rgba(56, 189, 248, 0.45); background: rgba(56, 189, 248, 0.10); }
+.btn.primary {
+  color: #03161d; border-color: transparent;
+  background: linear-gradient(135deg, #38e1ff, #22d3ee 45%, #7dd3fc);
+  box-shadow: 0 6px 22px rgba(34, 211, 238, 0.28);
+  font-weight: 650;
+}
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.backlink { text-decoration: none; }
+
+/* ---------------- layout ---------------- */
+.app {
+  position: relative; z-index: 1;
+  display: flex;
+  height: calc(100vh - 64px);
+  min-height: 0;
+}
+
+.sidebar {
+  width: 322px;
+  flex: 0 0 322px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 18px 18px 40px;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(9, 13, 22, 0.86), rgba(6, 9, 16, 0.72));
+  backdrop-filter: blur(10px);
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.18); border-radius: 3px; }
+
+.sidebar section { margin-top: 22px; }
+.sidebar h2 {
+  margin: 0 0 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  color: var(--dim); text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar h2::after { content: ""; flex: 1; height: 1px; background: var(--line); order: 2; }
+.sidebar h2 .cnt {
+  order: 3; margin-left: 8px; font-size: 9px; font-weight: 600;
+  color: var(--dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+}
+
+/* search */
+.search-wrap { position: relative; }
+.search-box {
+  display: flex; align-items: center; gap: 9px;
+  height: 40px; padding: 0 12px;
+  border: 1px solid var(--line-strong); border-radius: 11px;
+  background: rgba(2, 6, 12, 0.65);
+  transition: 0.2s;
+}
+.search-box:focus-within { border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.10); }
+.search-box svg { flex: 0 0 auto; color: var(--dim); }
+.search-box input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  color: var(--text); font-size: 13px; font-family: inherit;
+}
+.search-box input::placeholder { color: var(--dim); }
+.kbd {
+  font-size: 10px; color: var(--dim); border: 1px solid var(--line-strong);
+  border-radius: 5px; padding: 1px 5px; line-height: 1.5;
+}
+
+.search-results {
+  position: absolute; left: 0; right: 0; top: 46px; z-index: 40;
+  background: #0c121e; border: 1px solid var(--line-strong);
+  border-radius: 12px; box-shadow: var(--shadow);
+  overflow: hidden; display: none;
+}
+.search-results.open { display: block; }
+.sr-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.07);
+}
+.sr-item:last-child { border-bottom: 0; }
+.sr-item:hover, .sr-item.active { background: rgba(56, 189, 248, 0.10); }
+.sr-dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+.sr-name { font-size: 12.5px; font-weight: 600; }
+.sr-org { font-size: 10.5px; color: var(--dim); margin-left: auto; text-align: right; max-width: 130px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-empty { padding: 14px 12px; font-size: 12px; color: var(--dim); }
+
+/* chips */
+.presets { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.preset {
+  position: relative;
+  text-align: left; padding: 9px 22px 9px 10px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: rgba(148, 163, 184, 0.045);
+  color: var(--muted); font-size: 11.5px; cursor: pointer;
+  transition: 0.16s; line-height: 1.35;
+}
+.preset:hover { color: var(--text); border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.08); }
+.preset.active {
+  color: #a5f3fc; border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12);
+  box-shadow: inset 3px 0 0 #22d3ee;
+}
+.preset.active::after {
+  content: "✓"; position: absolute; top: 8px; right: 8px;
+  font-size: 9px; font-weight: 800; color: #22d3ee;
+}
+.preset small { display: block; font-size: 9.5px; color: var(--dim); margin-top: 2px; letter-spacing: 0.03em; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 9px 5px 7px; border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.04);
+  color: #8595aa; font-size: 11.5px; cursor: pointer;
+  transition: all 0.16s ease; white-space: nowrap; line-height: 1;
+}
+.chip:hover { color: var(--text); border-color: rgba(148, 163, 184, 0.4); background: rgba(148, 163, 184, 0.08); }
+.chip .tick {
+  width: 13px; height: 13px; border-radius: 4px;
+  display: grid; place-items: center;
+  font-size: 9px; font-weight: 800; line-height: 1;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  color: transparent; background: transparent;
+  transition: all 0.16s ease; flex: 0 0 auto;
+}
+.chip .n { font-size: 9.5px; color: #55657a; font-variant-numeric: tabular-nums; transition: color 0.16s; }
+.chip[data-on="true"] {
+  color: #eaf8ff; font-weight: 600;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.08));
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.10), inset 0 0 0 1px rgba(56, 189, 248, 0.10);
+}
+.chip[data-on="true"] .tick {
+  background: var(--c, #38bdf8);
+  border: 1px solid var(--c, #38bdf8);
+  color: #04121a;
+}
+.chip[data-on="true"] .n { color: #8fe6ff; }
+.chip[data-on="false"] .tick { border-style: dashed; }
+.chip[data-on="false"]:hover .tick { border-color: rgba(148, 163, 184, 0.6); }
+.chips.tags .chip { font-size: 11px; padding: 4px 8px; }
+.switch {
+  margin-top: 9px; width: 100%;
+  padding: 7px 10px; border-radius: 8px;
+  border: 1px dashed var(--line-strong);
+  background: rgba(148, 163, 184, 0.04);
+  color: var(--muted); font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; text-align: left;
+  transition: 0.16s;
+}
+.switch::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: #475569; flex: 0 0 auto;
+}
+.switch:hover { color: var(--text); border-color: var(--line-strong); }
+.switch[data-on="true"] {
+  border-style: solid; border-color: rgba(56, 189, 248, 0.45);
+  color: #bae6fd; background: rgba(56, 189, 248, 0.08);
+}
+.switch[data-on="true"]::before { background: #38bdf8; }
+
+/* legend */
+.legend { padding-top: 4px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin: 7px 0; }
+.legend-row .line { width: 26px; height: 0; border-top: 2px solid; border-radius: 2px; }
+.legend-row .line.dash { border-top-style: dashed; }
+.legend-row .line.dot { border-top-style: dotted; }
+.legend-note { font-size: 10.5px; line-height: 1.6; color: var(--dim); margin-top: 10px; }
+
+/* ---------------- stage ---------------- */
+.stage {
+  position: relative; flex: 1; min-width: 0; height: 100%;
+  overflow: hidden; cursor: grab;
+}
+.stage.dragging { cursor: grabbing; }
+.stage::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, #000 35%, transparent 100%);
+  opacity: 0.55;
+}
+#graph { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+.stage-hint {
+  position: absolute; left: 22px; bottom: 20px;
+  font-size: 11px; color: var(--dim); letter-spacing: 0.02em;
+  background: rgba(4, 8, 14, 0.55); padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--line); backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.insight {
+  position: absolute; bottom: 58px; left: 18px; z-index: 4;
+  width: 300px; padding: 12px 14px 10px;
+  border-radius: 13px; border: 1px solid var(--line);
+  background: rgba(8, 13, 22, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+.insight h4 {
+  margin: 0 0 8px; font-size: 10px; letter-spacing: 0.2em; color: var(--dim);
+  text-transform: uppercase; font-weight: 700;
+}
+.insight ul { margin: 0; padding-left: 15px; }
+.insight li { font-size: 11.5px; line-height: 1.65; color: var(--muted); margin: 5px 0; }
+.insight li b { color: #cfe0f2; font-weight: 650; }
+.insight p { margin: 9px 0 0; font-size: 10.5px; color: var(--dim); }
+.insight-close {
+  position: absolute; top: 8px; right: 8px; width: 22px; height: 22px;
+  border: 0; border-radius: 6px; background: transparent; color: var(--dim);
+  cursor: pointer; font-size: 11px; line-height: 1;
+}
+.insight-close:hover { background: rgba(148, 163, 184, 0.12); color: var(--text); }
+.insight.hide { display: none; }
+
+.zoom-controls {
+  position: absolute; right: 18px; bottom: 18px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 5;
+}
+.zbtn {
+  width: 34px; height: 34px; border-radius: 9px;
+  border: 1px solid var(--line-strong);
+  background: rgba(10, 16, 26, 0.86); color: var(--muted);
+  cursor: pointer; display: grid; place-items: center;
+  backdrop-filter: blur(8px); transition: 0.16s;
+  font-size: 15px;
+}
+.zbtn:hover { color: var(--text); border-color: rgba(56, 189, 248, 0.5); }
+
+.focus-banner {
+  position: absolute; top: 16px; left: 50%; transform: translate(-50%, -14px);
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(12, 20, 32, 0.92); border: 1px solid rgba(56, 189, 248, 0.35);
+  font-size: 11.5px; color: #bae6fd; box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: 0.25s; z-index: 6;
+}
+.focus-banner.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.focus-banner button {
+  border: 0; background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
+  padding: 3px 9px; border-radius: 999px; font-size: 11px; cursor: pointer;
+}
+
+/* ---------------- svg ---------------- */
+.region-tag {
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  fill: rgba(148, 163, 184, 0.66);
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+}
+.region-line { stroke: rgba(148, 163, 184, 0.3); stroke-width: 1; }
+.region-glow { pointer-events: none; }
+.region-label {
+  font-size: 54px; font-weight: 800; letter-spacing: 0.24em;
+  fill: rgba(148, 163, 184, 0.075);
+  text-anchor: middle; pointer-events: none; user-select: none;
+}
+.region-sub {
+  font-size: 11px; letter-spacing: 0.3em; fill: rgba(148, 163, 184, 0.16);
+  text-anchor: middle; pointer-events: none;
+}
+
+.edge { stroke-linecap: round; transition: opacity 0.22s ease; }
+.edge-advise { stroke: var(--advise); stroke-width: 1.5; opacity: 0.68; }
+.edge-collab { stroke: var(--collab); stroke-width: 1.2; opacity: 0.42; stroke-dasharray: 5 5; }
+.edge-topic { stroke: var(--topic); stroke-width: 1.1; opacity: 0.32; stroke-dasharray: 2 6; }
+.edge-team { stroke: var(--team); stroke-width: 1.2; opacity: 0.34; stroke-dasharray: 1 5; }
+.edge.org { stroke: #475569; stroke-width: 1; opacity: 0.30; stroke-dasharray: 1 4; }
+
+.edge.conf-low { opacity: 0.30; stroke-dasharray: 2 5 !important; }
+.edge.hl { opacity: 1 !important; stroke-width: 2.3 !important; }
+.edge.soft { opacity: 0.10 !important; }
+.edge.hidden { opacity: 0.035 !important; }
+
+.node { cursor: pointer; }
+.node .dot {
+  stroke: rgba(4, 8, 14, 0.9); stroke-width: 1.6;
+  transition: filter 0.2s ease;
+}
+.node .halo { opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+.ring-senior { stroke: rgba(226, 232, 240, 0.38); stroke-width: 1.2; pointer-events: none; }
+.ring-early { stroke: #38bdf8; stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.9; pointer-events: none; }
+.node:hover .halo, .node.hl .halo, .node.selected .halo { opacity: 0.20; }
+.node:hover .dot, .node.hl .dot { filter: brightness(1.22) drop-shadow(0 0 6px currentColor); }
+.node.selected .dot { filter: brightness(1.3) drop-shadow(0 0 10px currentColor); }
+
+.node .label {
+  font-size: 11px; font-weight: 500; fill: #c7d4e6;
+  text-anchor: middle; pointer-events: none;
+  paint-order: stroke; stroke: rgba(4, 7, 12, 0.92); stroke-width: 3.2px;
+  stroke-linejoin: round; transition: opacity 0.18s ease, fill 0.18s ease;
+}
+.node.major .label { font-weight: 650; fill: #e6eefb; font-size: 11.5px; }
+.node.removed, .edge.removed { display: none; }
+.node .badge { fill: var(--gold); stroke: #0a0f18; stroke-width: 1.4; pointer-events: none; }
+.node .badge-txt {
+  font-size: 7px; font-weight: 800; fill: #241a03; text-anchor: middle;
+  pointer-events: none; letter-spacing: 0;
+}
+
+.node.dimmed { opacity: 0.13; }
+.node.dimmed .label { opacity: 0.18; }
+.node.selected .label { opacity: 1 !important; }
+.node.hidden { opacity: 0.055; pointer-events: none; }
+.node.hidden .label, .node.hidden .badge { opacity: 0; }
+.node.minor .label { opacity: 0; }
+.stage.show-labels .node.minor .label { opacity: 1; }
+
+/* ---------------- detail panel ---------------- */
+.detail {
+  position: absolute; top: 16px; right: 16px; bottom: 16px;
+  width: 376px; max-width: calc(100% - 32px);
+  border-radius: 18px; border: 1px solid var(--line-strong);
+  background: linear-gradient(165deg, rgba(14, 21, 34, 0.97), rgba(8, 12, 20, 0.97));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  transform: translateX(calc(100% + 24px));
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex; flex-direction: column;
+  z-index: 8;
+}
+.detail.open { transform: translateX(0); }
+.detail-head {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+.detail-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: 8px;
+  border: 1px solid var(--line); background: rgba(148, 163, 184, 0.06);
+  color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1;
+}
+.detail-close:hover { color: var(--text); }
+.detail-name { font-size: 21px; font-weight: 700; letter-spacing: 0.01em; margin: 0 30px 2px 0; }
+.detail-en { font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; }
+.detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.pill {
+  font-size: 10.5px; padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--line-strong); color: var(--muted);
+  background: rgba(148, 163, 184, 0.05);
+}
+.pill.field { border-color: currentColor; }
+.detail-body { padding: 16px 18px 22px; overflow-y: auto; flex: 1; }
+.detail-body::-webkit-scrollbar { width: 5px; }
+.detail-body::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 3px; }
+
+.meta { display: grid; grid-template-columns: 62px 1fr; gap: 7px 10px; font-size: 12px; margin-bottom: 14px; }
+.meta dt { color: var(--dim); font-size: 10.5px; letter-spacing: 0.08em; padding-top: 1px; }
+.meta dd { margin: 0; color: #cbd8ea; line-height: 1.5; }
+
+.note {
+  font-size: 12.5px; line-height: 1.75; color: #b9c8db;
+  padding: 12px 13px; border-radius: 10px;
+  background: rgba(148, 163, 184, 0.055);
+  border-left: 2px solid rgba(56, 189, 248, 0.45);
+  margin-bottom: 18px;
+}
+
+.detail h3 {
+  font-size: 10px; letter-spacing: 0.16em; color: var(--dim);
+  text-transform: uppercase; margin: 16px 0 8px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.detail h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.rel { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 8px; cursor: pointer; transition: 0.15s; }
+.rel:hover { background: rgba(56, 189, 248, 0.08); }
+.rel-dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; }
+.rel-name { font-size: 12px; color: #d5e2f2; font-weight: 550; }
+.rel-sub { font-size: 10px; color: var(--dim); margin-left: auto; text-align: right; max-width: 150px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rel-conf { width: 14px; text-align: center; font-size: 9px; color: var(--dim); flex: 0 0 auto; }
+.empty-rel { font-size: 11.5px; color: var(--dim); padding: 6px 8px; }
+
+.detail-actions { display: flex; gap: 8px; margin-top: 18px; }
+.detail-actions .btn { flex: 1; justify-content: center; height: 36px; }
+
+.org-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.org-chip {
+  font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); color: var(--muted);
+  background: rgba(148, 163, 184, 0.05);
+}
+.org-chip:hover { color: var(--text); border-color: var(--line-strong); }
+
+/* tooltip */
+.tooltip {
+  position: fixed; z-index: 50; pointer-events: none;
+  padding: 9px 11px; border-radius: 10px;
+  background: rgba(8, 13, 22, 0.96);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0; transform: translateY(4px); transition: opacity 0.12s, transform 0.12s;
+  max-width: 260px;
+}
+.tooltip.show { opacity: 1; transform: translateY(0); }
+.tooltip .t-name { font-size: 12.5px; font-weight: 650; }
+.tooltip .t-en { font-size: 10px; color: var(--dim); margin-top: 1px; }
+.tooltip .t-org { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+.tooltip .t-tags { font-size: 10px; color: #7dd3fc; margin-top: 4px; }
+
+/* modal */
+.modal {
+  position: fixed; inset: 0; z-index: 100;
+  display: none; place-items: center;
+  background: rgba(2, 5, 9, 0.72); backdrop-filter: blur(6px);
+}
+.modal.open { display: grid; }
+.modal-card {
+  width: min(720px, calc(100vw - 40px));
+  max-height: min(78vh, 760px);
+  overflow-y: auto;
+  border-radius: 18px; border: 1px solid var(--line-strong);
+  background: linear-gradient(165deg, #0d1420, #080c14);
+  box-shadow: var(--shadow); padding: 26px 28px;
+}
+.modal-card h2 { margin: 0 0 4px; font-size: 18px; }
+.modal-card .sub { font-size: 11px; color: var(--dim); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 18px; }
+.modal-card h4 { font-size: 12px; margin: 20px 0 8px; color: #cfe0f2; letter-spacing: 0.03em; }
+.modal-card p, .modal-card li { font-size: 12.5px; line-height: 1.8; color: var(--muted); margin: 6px 0; }
+.modal-card ul { padding-left: 18px; margin: 6px 0; }
+.modal-card .close-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+.modal-card code { background: rgba(148, 163, 184, 0.12); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+@media (max-width: 1180px) {
+  .stats .stat:nth-child(n + 4) { display: none; }
+  .sidebar { width: 286px; flex-basis: 286px; }
+  .insight { display: none; }
+}
+@media (max-width: 900px) {
+  .stats { display: none; }
+  .brand { min-width: 0; }
+  .sidebar {
+    position: absolute; left: 0; top: 0; bottom: 0; z-index: 20;
+    transform: translateX(-100%); transition: transform 0.3s;
+    background: #080c14;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .detail { width: calc(100% - 32px); }
+}
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">M</div>
+      <div class="brand-text">
+        <h1>电机研究网络</h1>
+        <span>DESIGN · DRIVE · CONTROL</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="statNodes">107</b><span>学者</span></div>
+      <div class="stat"><b id="statLinks">—</b><span>关系</span></div>
+      <div class="stat"><b id="statOrgs">—</b><span>机构</span></div>
+      <div class="stat"><b id="statCountries">—</b><span>国家 / 地区</span></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="btnAbout">数据说明</button>
+      <button class="btn primary" id="btnExport">导出 PNG</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="search-wrap">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input id="search" type="text" placeholder="搜索姓名 / 机构 / 方向" autocomplete="off" spellcheck="false" />
+          <span class="kbd">/</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+
+      <section>
+        <h2>快速视角</h2>
+        <div class="presets" id="presets"></div>
+      </section>
+
+      <section>
+        <h2>研究方向 <span class="cnt" id="cntFields"></span></h2>
+        <div class="chips" id="fieldChips"></div>
+      </section>
+
+      <section>
+        <h2>学者层级 <span class="cnt" id="cntCareers"></span></h2>
+        <div class="chips" id="careerChips"></div>
+        <button class="switch" id="youthToggle" data-on="true">青年学者：已显示（点击移出）</button>
+      </section>
+
+      <section>
+        <h2>地区 <span class="cnt" id="cntRegions"></span></h2>
+        <div class="chips" id="regionChips"></div>
+      </section>
+
+      <section>
+        <h2>关系类型 <span class="cnt" id="cntEdges"></span></h2>
+        <div class="chips" id="edgeChips"></div>
+      </section>
+
+      <section>
+        <h2>主题标签 <span class="cnt" id="cntTags"></span></h2>
+        <div class="chips tags" id="tagChips"></div>
+      </section>
+
+      <section class="legend">
+        <h2>图例</h2>
+        <div class="legend-row"><span class="line" style="border-color:#fb923c"></span>师承（导师 → 学生）</div>
+        <div class="legend-row"><span class="line dash" style="border-color:#38bdf8"></span>合作 / 共同作者</div>
+        <div class="legend-row"><span class="line dot" style="border-color:#64748b"></span>同团队 · 同机构</div>
+        <div class="legend-row"><span class="line dot" style="border-color:#c084fc"></span>同一技术方向</div>
+        <div class="legend-row"><span class="line dash" style="border-color:#fb923c"></span>虚线 = 关系待核实</div>
+        <div class="legend-row"><span class="line" style="border-color:rgba(226,232,240,.55)"></span>银环 = 资深（院士 / Fellow / 讲席）</div>
+        <div class="legend-row"><span class="line dash" style="border-color:#38bdf8"></span>虚线环 = 青年学者</div>
+        <div class="legend-note">
+          节点颜色：<span style="color:#22d3ee">青</span> 设计 ·
+          <span style="color:#fbbf24">黄</span> 驱动 ·
+          <span style="color:#a78bfa">紫</span> 控制 ·
+          <span style="color:#34d399">绿</span> 系统<br />
+          金环 = 院士；节点大小 = 图中连接数，<b>不代表学术水平</b>。
+        </div>
+      </section>
+    </aside>
+
+    <main class="stage" id="stage">
+      <svg id="graph" xmlns="http://www.w3.org/2000/svg">
+        <g id="world">
+          <g id="glowLayer"></g>
+          <g id="regionLayer"></g>
+          <g id="edgeLayer"></g>
+          <g id="nodeLayer"></g>
+        </g>
+      </svg>
+
+      <div class="stage-hint">拖拽平移 · 滚轮缩放 · 点击学者查看关系 · 双击空白重置</div>
+
+      <div class="insight" id="insight">
+        <button class="insight-close" id="insightClose" title="收起">✕</button>
+        <h4>读图</h4>
+        <ul>
+          <li><b>WEMPEC</b> Novotny 与 Lipo 创建；Lipo → Toliyat / Longya Xu / 曲荣海</li>
+          <li><b>中国永磁</b> 唐任远 → 沈工大；程明 → 花为；贺益康 → 年珩；深大 黄苏丹（平面电机）</li>
+          <li><b>香港 / 双端口</b> 理大 诸自强、牛双霞、邹国棠 · 港大 陈清泉、许树源 · 城大 刘春华、江朝强</li>
+        </ul>
+        <p>悬停显示姓名 · 滚轮放大 · 点击展开关系</p>
+      </div>
+
+      <div class="focus-banner" id="focusBanner">
+        <span>聚焦模式</span>
+        <button id="focusExit">退出聚焦</button>
+      </div>
+
+      <div class="zoom-controls">
+        <button class="zbtn" id="zoomIn" title="放大">+</button>
+        <button class="zbtn" id="zoomOut" title="缩小">−</button>
+        <button class="zbtn" id="zoomFit" title="适应视图">⛶</button>
+      </div>
+
+      <aside class="detail" id="detail"></aside>
+    </main>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <div class="modal" id="aboutModal">
+    <div class="modal-card">
+      <h2>关于这张研究网络</h2>
+      <div class="sub">METHODOLOGY &amp; CAVEATS</div>
+      <p>这张图把电机领域的<b>人、机构、师承与技术路线</b>放在同一张可交互的网络里，用于快速建立领域地图，而不是做学术评价。</p>
+
+      <h4>收录范围</h4>
+      <ul>
+        <li>三个相互咬合的方向：<b>电机本体设计</b>（电磁/热/结构）、<b>驱动</b>（电力电子与系统）、<b>控制</b>（无位置传感器、MPC、伺服等）。</li>
+        <li>以高校/研究所课题组为主，兼收少量产业界代表人物；覆盖中国内地与香港、欧洲/英国、北美、日韩澳。</li>
+        <li>每人给出机构、主要方向、2–3 个主题标签与一句研究特色说明。</li>
+      </ul>
+
+      <h4>四种关系</h4>
+      <ul>
+        <li><b>师承</b>（橙色箭头）：以博士导师/团队负责人为主，方向为导师 → 学生。</li>
+        <li><b>合作</b>（蓝色虚线）：公开的共同作者、同中心同事或长期合作。</li>
+        <li><b>同团队 / 同机构</b>（灰色点线）：同一课题组或同一院系，由机构字段自动生成，可在筛选器中关闭。</li>
+        <li><b>同方向</b>（紫色点线）：编辑判断的技术路线相近（如无位置传感器、集成绕组双端口），不代表正式合作。</li>
+      </ul>
+
+      <h4>可信度标记</h4>
+      <p>每条关系带可信度：<b>●</b> 已核实（学校主页/IEEE 传记/博士论文）；<b>◐</b> 较可信（多方资料一致但未逐一核对原始来源）；<b>○</b> 待核实（公开资料不足，图中以稀疏虚线显示）。界面中把鼠标放在关系上可看到依据说明。</p>
+
+      <h4>学者层级</h4>
+      <p>为了区分“大牛”和青年学者，图中加了一层编辑标注：<b>资深</b>（院士 / IEEE Fellow / 国家杰青 / 讲席或荣休教授，40 人）、<b>中坚</b>（61 人）、<b>青年</b>（博士毕业约十年内、助理/副教授或研究助理教授，6 人）。资深节点带银环（院士仍用金环），青年节点带蓝色虚线环；左侧“学者层级”可只看某一层，或一键把青年移出主图。</p>
+
+      <h4>怎么用</h4>
+      <ul>
+        <li>点 <b>师承脉络</b> 只看导师—学生链；点 <b>中国团队 / 欧洲 / 北美</b> 看区域格局。</li>
+        <li>点 <b>集成绕组 / 双端口</b> 进入“曲荣海 → 牛双霞”的二度关系视角。</li>
+        <li>选中一位学者后，右侧面板列出导师、学生、合作者与同机构同事，可继续点击漫游。</li>
+        <li>用 <b>学者层级</b> 或“资深学者 / 青年学者”视角，区分资深 PI 与青年学者；点“青年学者：移出主图”可得到一张只有资深/中坚的干净网络。</li>
+        <li>用主题标签（永磁、无轴承、风电、电动汽车……）交叉筛选，找交叉方向的人。</li>
+      </ul>
+
+      <h4>局限</h4>
+      <p>① 关系数据来自公开资料，无法覆盖“私下合作、短期访学、企业项目”等弱关系；② 师承以博士导师为主，博士后/团队负责人关系未单列；③ 任职与头衔会变动，个别信息可能滞后；④ “同方向”是编辑判断，仅供导航，不作为事实引用。用于论文或申报材料前，请以学校主页与原始论文为准。</p>
+
+      <div class="close-row"><button class="btn" id="aboutClose">知道了</button></div>
+    </div>
+  </div>
+
+  <script>
+/* 电机设计 / 驱动 / 控制 研究网络数据
+ * 说明：人物与机构取自公开资料（大学主页、IEEE 传记、院士名录、团队网站）。
+ * 师承关系以博士导师/团队负责人为主；无法完全确认的用 conf:"low" 标注，图中以虚线显示。
+ * 节点大小由连接数计算，不代表学术水平。
+ */
+window.MOTOR_DATA = {
+  meta: {
+    title: "电机研究网络",
+    updated: "2026-11",
+    scope: "全球 · 电机本体设计 / 电机驱动 / 电机控制"
+  },
+
+  nodes: [
+    /* ---------------- 中国内地 / 香港 ---------------- */
+    { id: "cheng_ming", name: "程明", en: "Ming Cheng", label: "程明", org: "东南大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["永磁电机", "风电", "磁场调制"],
+      note: "东南大学首席教授，IEEE Fellow。永磁电机与风力发电系统，磁通切换与磁场调制电机的重要推动者。" },
+    { id: "hua_wei", name: "花为", en: "Wei Hua", label: "花为", org: "东南大学", country: "中国", region: "中国", field: "design", major: true, honor: "国家杰青",
+      tags: ["永磁电机", "电动汽车", "电磁计算/优化"],
+      note: "东南大学教授、电气工程学院院长，国家杰青；程明博士毕业生，2004–2005 年在 Sheffield 联合培养（师从诸自强）。" },
+    { id: "tang_renyuan", name: "唐任远", en: "Renyuan Tang", label: "唐任远", org: "沈阳工业大学", country: "中国", region: "中国", field: "design", major: true, badge: "中国工程院院士",
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "中国工程院院士，中国永磁电机研究的奠基性人物之一，著有《现代永磁电机理论与设计》。" },
+    { id: "zhang_fengge", name: "张凤阁", en: "Fengge Zhang", label: "张凤阁", org: "沈阳工业大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "风电"],
+      note: "沈阳工业大学教授，国家稀土永磁电机工程技术研究中心主任（唐任远创建），永磁与特种电机。" },
+    { id: "li_yan_sut", name: "李岩", en: "Yan Li", label: "李岩", org: "沈阳工业大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "电动汽车"],
+      note: "沈阳工业大学教授，永磁电机设计与分析。" },
+    { id: "gu_guobiao", name: "顾国彪", en: "Guobiao Gu", label: "顾国彪", org: "中国科学院电工研究所", country: "中国", region: "中国", field: "design", major: true, badge: "中国工程院院士",
+      tags: ["热管理", "超导"],
+      note: "中国工程院院士，蒸发冷却电机与水轮发电机，中国科学院电工研究所。" },
+    { id: "wen_xuhui", name: "温旭辉", en: "Xuhui Wen", label: "温旭辉", org: "中国科学院电工研究所", country: "中国", region: "中国", field: "drive", major: true,
+      tags: ["电动汽车", "永磁电机"],
+      note: "中国科学院电工研究所研究员，电动汽车电驱动系统与电机控制。" },
+    { id: "ma_weiming", name: "马伟明", en: "Weiming Ma", label: "马伟明", org: "海军工程大学", country: "中国", region: "中国", field: "system", major: true, badge: "中国工程院院士",
+      tags: ["船舶", "电力电子", "永磁电机"],
+      note: "中国工程院院士，舰船综合电力与电磁发射技术，海军工程大学。" },
+    { id: "wang_dong", name: "王东", en: "Dong Wang", label: "王东", org: "海军工程大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["船舶", "永磁电机", "电磁计算/优化"],
+      note: "海军工程大学教授，舰船大功率多相永磁电机系统；马伟明团队核心成员（2021 年院士增选候选人）。" },
+    { id: "xia_changliang", name: "夏长亮", en: "Changliang Xia", label: "夏长亮", org: "浙江大学", country: "中国", region: "中国", field: "drive", major: true, badge: "中国工程院院士",
+      tags: ["永磁电机", "风电"],
+      note: "中国工程院院士，高效能电机系统设计与控制；曾任天津工业大学校长，2025 年见于浙江大学电机系统及其控制研究所成员名单。" },
+    { id: "li_yongdong", name: "李永东", en: "Yongdong Li", label: "李永东", org: "清华大学", country: "中国", region: "中国", field: "drive", major: true,
+      tags: ["感应电机", "电动汽车", "电力电子"],
+      note: "清华大学教授，IEEE Fellow。交流电机数字控制、高压变频与电动汽车驱动。" },
+    { id: "zhao_zhengming", name: "赵争鸣", en: "Zhengming Zhao", label: "赵争鸣", org: "清华大学", country: "中国", region: "中国", field: "drive", major: true, status: "已故",
+      tags: ["电力电子", "电动汽车"],
+      note: "清华大学教授（1959—2025），电力电子与电机系统、光伏与微网；2025 年 9 月逝世。" },
+    { id: "jiang_dong", name: "蒋栋", en: "Dong Jiang", label: "蒋栋", org: "清华大学", country: "中国", region: "中国", field: "control",
+      tags: ["永磁电机", "无位置传感器"],
+      note: "清华大学副教授，永磁电机控制与无位置传感器技术。" },
+    { id: "zheng_zedong", name: "郑泽东", en: "Zedong Zheng", label: "郑泽东", org: "清华大学", country: "中国", region: "中国", field: "drive",
+      tags: ["电动汽车", "电力电子"],
+      note: "清华大学副教授，电机驱动与多电平变换器。" },
+    { id: "zhang_pinjia", name: "张品佳", en: "Pinjia Zhang", label: "张品佳", org: "清华大学", country: "中国", region: "中国", field: "system",
+      tags: ["故障诊断", "电动汽车"],
+      note: "清华大学副教授，电机状态监测与电气设备可靠性。" },
+    { id: "he_yikang", name: "贺益康", en: "Yikang He", label: "贺益康", org: "浙江大学", country: "中国", region: "中国", field: "control", major: true,
+      tags: ["风电", "感应电机"],
+      note: "浙江大学教授，交流励磁/双馈风力发电与电机控制。" },
+    { id: "nian_heng", name: "年珩", en: "Heng Nian", label: "年珩", org: "浙江大学", country: "中国", region: "中国", field: "control", major: true,
+      tags: ["风电", "永磁电机"],
+      note: "浙江大学教授，贺益康博士毕业生。风电并网与电机控制。" },
+    { id: "shen_jianxin", name: "沈建新", en: "Jianxin Shen", label: "沈建新", org: "浙江大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["永磁电机", "伺服/机器人"],
+      note: "浙江大学教授，永磁电机设计与驱动。" },
+    { id: "fang_youtong", name: "方攸同", en: "Youtong Fang", label: "方攸同", org: "浙江大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "电动汽车"],
+      note: "浙江大学教授，牵引电机与高速电机。" },
+    { id: "lu_qinfen", name: "卢琴芬", en: "Qinfen Lu", label: "卢琴芬", org: "浙江大学", country: "中国", region: "中国", field: "design",
+      tags: ["直线电机", "永磁电机"],
+      note: "浙江大学教授，直线电机与磁悬浮。" },
+    { id: "wu_lijian", name: "吴立建", en: "Lijian Wu", label: "吴立建", org: "浙江大学", country: "中国", region: "中国", field: "design", major: true, honor: "国家杰青",
+      tags: ["永磁电机", "风电", "电磁计算/优化"],
+      note: "浙江大学求是特聘教授、安徽大学学术副校长，2008–2011 年 Sheffield 博士（诸自强指导），国家杰青、IET Fellow；永磁电机与风电。" },
+    { id: "huang_xiaoyan", name: "黄晓艳", en: "Xiaoyan Huang", label: "黄晓艳", org: "浙江大学", country: "中国", region: "中国", field: "design", major: true, honor: "国家优青",
+      tags: ["永磁电机", "高速电机", "电动汽车"],
+      note: "浙江大学教授、电机系副主任，2008 年 Nottingham 博士，国家优青；高速列车永磁牵引电机与容错电机。" },
+    { id: "qu_ronghai", name: "曲荣海", en: "Ronghai Qu", label: "曲荣海", org: "华中科技大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["永磁电机", "双端口/集成绕组", "航空/船舶"],
+      note: "华中科技大学教授，曾任 GE 全球研发中心；磁场调制电机理论体系，团队开展双机电端口/集成绕组电机研究。" },
+    { id: "gu_chenglin", name: "辜承林", en: "Chenglin Gu", label: "辜承林", org: "华中科技大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "直线电机"],
+      note: "华中科技大学教授，特种电机与电磁装置。" },
+    { id: "yang_kai_hust", name: "杨凯", en: "Kai Yang", label: "杨凯", org: "华中科技大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "电动汽车"],
+      note: "华中科技大学教授，永磁电机设计与振动噪声。" },
+    { id: "xu_dianguo", name: "徐殿国", en: "Dianguo Xu", label: "徐殿国", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "drive", major: true,
+      tags: ["电力电子", "伺服/机器人"],
+      note: "哈尔滨工业大学教授，电力电子与电机驱动、伺服系统。" },
+    { id: "zou_jibin", name: "邹继斌", en: "Jibin Zou", label: "邹继斌", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["永磁电机", "伺服/机器人"],
+      note: "哈尔滨工业大学教授，永磁电机与伺服系统。" },
+    { id: "wang_gaolin", name: "王高林", en: "Gaolin Wang", label: "王高林", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "control",
+      tags: ["无位置传感器", "永磁电机"],
+      note: "哈尔滨工业大学教授，永磁电机无位置传感器控制。" },
+    { id: "yang_ming_hit", name: "杨明", en: "Ming Yang", label: "杨明", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "control",
+      tags: ["伺服/机器人", "永磁电机"],
+      note: "哈尔滨工业大学教授，伺服驱动与电机控制。" },
+    { id: "li_liyi", name: "李立毅", en: "Liyi Li", label: "李立毅", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "design",
+      tags: ["直线电机", "航空/船舶"],
+      note: "哈尔滨工业大学教授，直线电机与电磁弹射。" },
+    { id: "kou_baoquan", name: "寇宝泉", en: "Baoquan Kou", label: "寇宝泉", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "design",
+      tags: ["直线电机", "永磁电机"],
+      note: "哈尔滨工业大学教授，直线电机与特种电磁装置。" },
+    { id: "cai_wei", name: "蔡蔚", en: "Wei Cai", label: "蔡蔚", org: "哈尔滨理工大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["电动汽车", "永磁电机"],
+      note: "精进电动创始人，哈尔滨理工大学教授，俄罗斯工程院外籍院士；车用驱动电机产业化。" },
+    { id: "liu_weiguo", name: "刘卫国", en: "Weiguo Liu", label: "刘卫国", org: "西北工业大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["航空/船舶", "永磁电机"],
+      note: "西北工业大学教授，航空电机与起动发电系统。" },
+    { id: "deng_zhiquan", name: "邓智泉", en: "Zhiquan Deng", label: "邓智泉", org: "南京航空航天大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["无轴承/高速", "航空/船舶"],
+      note: "南京航空航天大学教授，无轴承电机与高速电机。" },
+    { id: "zhang_zhuoran", name: "张卓然", en: "Zhuoran Zhang", label: "张卓然", org: "南京航空航天大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["航空/船舶", "永磁电机"],
+      note: "南京航空航天大学教授，多电飞机与航空电机。" },
+    { id: "wang_xiuhe", name: "王秀和", en: "Xiuhe Wang", label: "王秀和", org: "山东大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "山东大学教授，永磁电机设计与磁场计算。" },
+    { id: "zhao_wenxiang", name: "赵文祥", en: "Wenxiang Zhao", label: "赵文祥", org: "江苏大学", country: "中国", region: "中国", field: "design", honor: "国家杰青",
+      tags: ["永磁电机", "多相/容错"],
+      note: "江苏大学教授，国家杰青，江苏省先进数控与电力传动重点实验室主任；容错永磁电机与电动汽车驱动。" },
+    { id: "liu_guohai", name: "刘国海", en: "Guohai Liu", label: "刘国海", org: "江苏大学", country: "中国", region: "中国", field: "control",
+      tags: ["永磁电机", "多相/容错"],
+      note: "江苏大学教授，电机控制与容错驱动。" },
+    { id: "huang_shoudao", name: "黄守道", en: "Shoudao Huang", label: "黄守道", org: "湖南大学", country: "中国", region: "中国", field: "design", major: true,
+      tags: ["风电", "永磁电机"],
+      note: "湖南大学教授，风力发电与特种电机。" },
+    { id: "huang_surong", name: "黄苏融", en: "Surong Huang", label: "黄苏融", org: "上海大学", country: "中国", region: "中国", field: "design",
+      tags: ["电动汽车", "永磁电机"],
+      note: "上海大学教授，车用永磁电机设计与开发。" },
+    { id: "kang_jinsong", name: "康劲松", en: "Jinsong Kang", label: "康劲松", org: "同济大学", country: "中国", region: "中国", field: "drive",
+      tags: ["电动汽车", "电力电子"],
+      note: "同济大学教授，电动汽车电驱动与能量管理。" },
+    { id: "niu_shuangxia", name: "牛双霞", en: "Shuangxia Niu", label: "牛双霞", org: "香港理工大学", country: "中国", region: "中国香港", field: "design", major: true,
+      tags: ["双端口/集成绕组", "磁场调制", "永磁电机"],
+      note: "香港理工大学教授、电机实验室主任，2009 年于香港大学获博士；磁齿轮、磁场调制与多端口/集成绕组电机。" },
+    { id: "chau_kt", name: "邹国棠", en: "K. T. Chau", label: "K.T. Chau", org: "香港理工大学", country: "中国", region: "中国香港", field: "design", major: true,
+      tags: ["电动汽车", "磁场调制", "永磁电机"],
+      note: "香港理工大学讲座教授（Chair Professor），长期任教于香港大学；电动车电机、磁齿轮/磁场调制与无线充电，IEEE Fellow。" },
+    { id: "huang_sudan", name: "黄苏丹", en: "Sudan Huang", label: "黄苏丹", org: "深圳大学", country: "中国", region: "中国", field: "control", major: true,
+      tags: ["直线电机", "平面电机", "磁悬浮"],
+      note: "深圳大学机电与控制工程学院副教授，平面/直线开关磁阻电机、磁悬浮与精密运动控制，IEEE TIA 副编辑。" },
+    { id: "cao_guangzhong", name: "曹广忠", en: "Guangzhong Cao", label: "曹广忠", org: "深圳大学", country: "中国", region: "中国", field: "control", major: true,
+      tags: ["磁悬浮", "平面电机", "运动控制"],
+      note: "深圳大学教授，磁悬浮与平面电机控制、精密运动控制，黄苏丹团队的资深合作者。" },
+    { id: "cchan", name: "陈清泉", en: "C. C. Chan", label: "C.C. Chan", org: "香港大学", country: "中国", region: "中国香港", field: "system", major: true, badge: "中国工程院院士",
+      tags: ["电动汽车", "电机驱动"],
+      note: "香港大学教授，中国工程院院士；国际电动汽车与电机驱动领域的重要开拓者。" },
+    { id: "kwcheng", name: "郑家伟", en: "K. W. E. Cheng", label: "K.W.E. Cheng", org: "香港理工大学", country: "中国", region: "中国香港", field: "drive", major: true,
+      tags: ["电力电子", "电动汽车"],
+      note: "香港理工大学教授，电力电子变换器与电动汽车驱动。" },
+    { id: "ronhui", name: "许树源", en: "S. Y. Ron Hui", label: "S.Y.R. Hui", org: "香港大学", country: "中国", region: "中国香港", field: "drive", major: true,
+      tags: ["电力电子", "无线充电"],
+      note: "香港大学讲座教授，IEEE Fellow；电力电子与无线充电技术。" },
+    { id: "liu_chunhua", name: "刘春华", en: "Chunhua Liu", label: "刘春华", org: "香港城市大学", country: "中国", region: "中国香港", field: "design", major: true,
+      tags: ["永磁电机", "磁场调制", "电动汽车"],
+      note: "香港城市大学能源及环境学院讲座教授，2009 年于香港大学获博士；永磁/磁齿轮/直线电机与电动车、无线充电。" },
+    { id: "jiang_chaoqiang", name: "江朝强", en: "Chaoqiang Jiang", label: "江朝强", org: "香港城市大学", country: "中国", region: "中国香港", field: "drive", major: true,
+      tags: ["无线充电", "电力电子", "电动汽车"],
+      note: "香港城市大学电机工程系副教授，2019 年于香港大学获博士（邹国棠、陈清泉共同指导）；电力电子、无线充电与电动汽车驱动。" },
+    { id: "jiang_mingyuan", name: "江明远", en: "Mingyuan Jiang", label: "江明远", org: "香港理工大学", country: "中国", region: "中国香港", field: "design", major: true,
+      tags: ["永磁电机", "直线电机", "机器人"],
+      note: "香港理工大学研究助理教授（2024 年 PolyU 博士），电机设计、优化与控制，直线/永磁电机与机器人作动器。" },
+
+    /* ---------------- 欧洲 ---------------- */
+    { id: "zhu_zq", name: "诸自强", en: "Zi-Qiang Zhu", label: "Z.Q. Zhu", org: "香港理工大学", country: "中国", region: "中国香港", field: "design", major: true,
+      tags: ["永磁电机", "电动汽车", "电磁计算/优化"],
+      note: "香港理工大学讲席教授，此前长期任教于谢菲尔德大学；永磁电机设计与磁场计算，领导 EMDG 团队。" },
+    { id: "howe_david", name: "David Howe", en: "David Howe", label: "D. Howe", org: "谢菲尔德大学", country: "英国", region: "欧洲", field: "design", major: true,
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "谢菲尔德大学荣休教授，永磁电机与作动器，Z.Q. Zhu 的导师与长期合作者。" },
+    { id: "gerada_chris", name: "Chris Gerada", en: "Chris Gerada", label: "C. Gerada", org: "诺丁汉大学", country: "英国", region: "欧洲", field: "design", major: true,
+      tags: ["航空/船舶", "永磁电机", "热管理"],
+      note: "诺丁汉大学教授，PEMC 主任，航空与高功率密度电机。" },
+    { id: "wheeler_patrick", name: "Patrick Wheeler", en: "Patrick Wheeler", label: "P. Wheeler", org: "诺丁汉大学", country: "英国", region: "欧洲", field: "drive",
+      tags: ["电力电子", "航空/船舶"],
+      note: "诺丁汉大学教授，IEEE Fellow。矩阵变换器与航空电力电子。" },
+    { id: "mecrow_barrie", name: "Barrie Mecrow", en: "Barrie Mecrow", label: "B. Mecrow", org: "纽卡斯尔大学", country: "英国", region: "欧洲", field: "design", major: true,
+      tags: ["航空/船舶", "永磁电机"],
+      note: "纽卡斯尔大学教授，IEEE Fellow。航空与容错电机。" },
+    { id: "mellor_phil", name: "Phil Mellor", en: "Phil Mellor", label: "P. Mellor", org: "布里斯托大学", country: "英国", region: "欧洲", field: "design", major: true,
+      tags: ["热管理", "航空/船舶"],
+      note: "布里斯托大学教授，电机热管理与高功率密度设计。" },
+    { id: "hameyer_kay", name: "Kay Hameyer", en: "Kay Hameyer", label: "K. Hameyer", org: "亚琛工业大学", country: "德国", region: "欧洲", field: "design", major: true,
+      tags: ["电磁计算/优化", "电动汽车"],
+      note: "亚琛工业大学荣休教授（IEM 前所长），电机电磁场计算与设计优化。" },
+    { id: "doppelbauer_martin", name: "Martin Doppelbauer", en: "Martin Doppelbauer", label: "M. Doppelbauer", org: "卡尔斯鲁厄理工学院", country: "德国", region: "欧洲", field: "drive", major: true,
+      tags: ["电动汽车", "永磁电机"],
+      note: "卡尔斯鲁厄理工学院教授，电机驱动与能效。" },
+    { id: "bolognani_silverio", name: "Silverio Bolognani", en: "Silverio Bolognani", label: "S. Bolognani", org: "帕多瓦大学", country: "意大利", region: "欧洲", field: "control", major: true,
+      tags: ["永磁电机", "无位置传感器"],
+      note: "帕多瓦大学教授，IEEE Fellow。电机控制与无位置传感器技术。" },
+    { id: "bianchi_nicola", name: "Nicola Bianchi", en: "Nicola Bianchi", label: "N. Bianchi", org: "帕多瓦大学", country: "意大利", region: "欧洲", field: "design", major: true,
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "帕多瓦大学教授，IEEE Fellow，Bolognani 博士毕业生。永磁电机设计与优化。" },
+    { id: "lomonova_elena", name: "Elena Lomonova", en: "Elena Lomonova", label: "E. Lomonova", org: "埃因霍温理工大学", country: "荷兰", region: "欧洲", field: "design", major: true,
+      tags: ["永磁电机", "直线电机"],
+      note: "埃因霍温理工大学教授，电磁作动器与磁悬浮。" },
+    { id: "pyrhonen_juha", name: "Juha Pyrhönen", en: "Juha Pyrhönen", label: "J. Pyrhönen", org: "LUT 大学", country: "芬兰", region: "欧洲", field: "design", major: true,
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "LUT 大学教授，电机设计与《Design of Rotating Electrical Machines》作者之一。" },
+    { id: "arkkio_antero", name: "Antero Arkkio", en: "Antero Arkkio", label: "A. Arkkio", org: "阿尔托大学", country: "芬兰", region: "欧洲", field: "design",
+      tags: ["电磁计算/优化", "感应电机"],
+      note: "阿尔托大学教授，电机电磁场数值计算。" },
+    { id: "blaabjerg_frede", name: "Frede Blaabjerg", en: "Frede Blaabjerg", label: "F. Blaabjerg", org: "奥尔堡大学", country: "丹麦", region: "欧洲", field: "drive", major: true,
+      tags: ["电力电子", "风电"],
+      note: "奥尔堡大学教授，IEEE Fellow。电力电子与风电变流，与电机驱动社区高度重叠。" },
+    { id: "kennel_ralph", name: "Ralph Kennel", en: "Ralph Kennel", label: "R. Kennel", org: "慕尼黑工业大学", country: "德国", region: "欧洲", field: "control", major: true,
+      tags: ["模型预测", "永磁电机"],
+      note: "慕尼黑工业大学教授，模型预测控制与电机驱动。" },
+    { id: "binder_andreas", name: "Andreas Binder", en: "Andreas Binder", label: "A. Binder", org: "达姆施塔特工业大学", country: "德国", region: "欧洲", field: "design",
+      tags: ["永磁电机", "热管理"],
+      note: "达姆施塔特工业大学教授，电机设计与运行。" },
+    { id: "ponick_bernd", name: "Bernd Ponick", en: "Bernd Ponick", label: "B. Ponick", org: "汉诺威大学", country: "德国", region: "欧洲", field: "design",
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "汉诺威大学教授，电机设计与计算。" },
+    { id: "briz_fernando", name: "Fernando Briz", en: "Fernando Briz", label: "F. Briz", org: "奥维耶多大学", country: "西班牙", region: "欧洲", field: "control", major: true,
+      tags: ["故障诊断", "永磁电机"],
+      note: "奥维耶多大学教授，电机控制与故障诊断。" },
+    { id: "casadei_domenico", name: "Domenico Casadei", en: "Domenico Casadei", label: "D. Casadei", org: "博洛尼亚大学", country: "意大利", region: "欧洲", field: "control",
+      tags: ["永磁电机", "模型预测"],
+      note: "博洛尼亚大学教授，电机驱动直接转矩控制。" },
+    { id: "boglietti_aldo", name: "Aldo Boglietti", en: "Aldo Boglietti", label: "A. Boglietti", org: "都灵理工大学", country: "意大利", region: "欧洲", field: "design",
+      tags: ["热管理", "感应电机"],
+      note: "都灵理工大学教授，电机热分析与损耗计算。" },
+    { id: "cavagnino_andrea", name: "Andrea Cavagnino", en: "Andrea Cavagnino", label: "A. Cavagnino", org: "都灵理工大学", country: "意大利", region: "欧洲", field: "design",
+      tags: ["电磁计算/优化", "热管理"],
+      note: "都灵理工大学教授，电机设计与损耗建模。" },
+    { id: "bramerdorfer_gerd", name: "Gerd Bramerdorfer", en: "Gerd Bramerdorfer", label: "G. Bramerdorfer", org: "林茨大学", country: "奥地利", region: "欧洲", field: "design",
+      tags: ["电磁计算/优化", "永磁电机"],
+      note: "林茨大学教授，电机设计优化与代理模型。" },
+    { id: "soulard_juliette", name: "Juliette Soulard", en: "Juliette Soulard", label: "J. Soulard", org: "瑞典皇家理工学院", country: "瑞典", region: "欧洲", field: "design",
+      tags: ["永磁电机", "电动汽车"],
+      note: "瑞典皇家理工学院教授，电机设计与可持续材料。" },
+    { id: "kamper_maarten", name: "Maarten Kamper", en: "Maarten Kamper", label: "M. Kamper", org: "斯泰伦博斯大学", country: "南非", region: "欧洲", field: "design",
+      tags: ["永磁电机", "风电"],
+      note: "斯泰伦博斯大学教授，永磁电机与风电。" },
+    { id: "sharkh_suleiman", name: "Suleiman Sharkh", en: "Suleiman Sharkh", label: "S. Sharkh", org: "南安普顿大学", country: "英国", region: "欧洲", field: "drive",
+      tags: ["船舶", "永磁电机"],
+      note: "南安普顿大学教授，船舶推进与电机驱动。" },
+    { id: "tessarolo_alberto", name: "Alberto Tessarolo", en: "Alberto Tessarolo", label: "A. Tessarolo", org: "的里雅斯特大学", country: "意大利", region: "欧洲", field: "design",
+      tags: ["多相/容错", "永磁电机"],
+      note: "的里雅斯特大学教授，多相与容错电机。" },
+
+    /* ---------------- 北美 ---------------- */
+    { id: "lipo", name: "Thomas A. Lipo", en: "Thomas A. Lipo", label: "T. Lipo", org: "威斯康星大学麦迪逊分校", country: "美国", region: "北美", field: "design", major: true, badge: "NAE 院士", status: "已故",
+      tags: ["感应电机", "永磁电机", "开关磁阻"],
+      note: "威斯康星大学麦迪逊分校荣休教授，1981 年与 Novotny 共同创建 WEMPEC；现代交流电机理论与驱动，2020 年逝世。" },
+    { id: "novotny", name: "Donald W. Novotny", en: "Donald W. Novotny", label: "D. Novotny", org: "威斯康星大学麦迪逊分校", country: "美国", region: "北美", field: "drive", major: true,
+      tags: ["感应电机", "模型预测"],
+      note: "威斯康星大学麦迪逊分校荣休教授，WEMPEC 联合创建者，感应电机磁场定向控制。" },
+    { id: "jahns", name: "Thomas M. Jahns", en: "Thomas M. Jahns", label: "T. Jahns", org: "威斯康星大学麦迪逊分校", country: "美国", region: "北美", field: "design", major: true,
+      tags: ["永磁电机", "电动汽车"],
+      note: "威斯康星大学麦迪逊分校教授、WEMPEC 联合主任；MIT 博士（1978），1998 年加入 UW-Madison，永磁电机与驱动系统。" },
+    { id: "lorenz", name: "Robert D. Lorenz", en: "Robert D. Lorenz", label: "R. Lorenz", org: "威斯康星大学麦迪逊分校", country: "美国", region: "北美", field: "control", major: true, status: "已故",
+      tags: ["伺服/机器人", "模型预测"],
+      note: "威斯康星大学麦迪逊分校教授、WEMPEC 联合主任，运动控制与自传感技术；2019 年逝世。" },
+    { id: "toliyat", name: "Hamid A. Toliyat", en: "Hamid A. Toliyat", label: "H. Toliyat", org: "德州农工大学", country: "美国", region: "北美", field: "design", major: true,
+      tags: ["多相/容错", "故障诊断"],
+      note: "德州农工大学教授，多相电机与故障诊断。" },
+    { id: "xu_longya", name: "Longya Xu", en: "Longya Xu", label: "L. Xu", org: "俄亥俄州立大学", country: "美国", region: "北美", field: "design", major: true, badge: "NAE 院士",
+      tags: ["永磁电机", "风电"],
+      note: "俄亥俄州立大学教授（2022 年荣休），2023 年当选美国国家工程院院士；永磁/双馈电机与风电驱动。" },
+    { id: "elrefaie", name: "Ayman M. El-Refaie", en: "Ayman M. El-Refaie", label: "A. El-Refaie", org: "马凯特大学", country: "美国", region: "北美", field: "design", major: true,
+      tags: ["永磁电机", "航空/船舶"],
+      note: "马凯特大学教授，曾任 GE 全球研发中心，高功率密度永磁电机。" },
+    { id: "ionel", name: "Dan M. Ionel", en: "Dan M. Ionel", label: "D. Ionel", org: "肯塔基大学", country: "美国", region: "北美", field: "design", major: true,
+      tags: ["电磁计算/优化", "永磁电机"],
+      note: "肯塔基大学教授，电机设计与电磁计算。" },
+    { id: "emadi", name: "Ali Emadi", en: "Ali Emadi", label: "A. Emadi", org: "麦克马斯特大学", country: "加拿大", region: "北美", field: "drive", major: true,
+      tags: ["电动汽车", "电力电子"],
+      note: "麦克马斯特大学教授，电动汽车动力总成。" },
+    { id: "pekarek", name: "Steve D. Pekarek", en: "Steve D. Pekarek", label: "S. Pekarek", org: "普渡大学", country: "美国", region: "北美", field: "drive",
+      tags: ["永磁电机", "航空/船舶"],
+      note: "普渡大学教授，电机建模与驱动。" },
+    { id: "khaligh", name: "Alireza Khaligh", en: "Alireza Khaligh", label: "A. Khaligh", org: "马里兰大学", country: "美国", region: "北美", field: "drive",
+      tags: ["电动汽车", "电力电子"],
+      note: "马里兰大学教授，电力电子与电动汽车。" },
+    { id: "hofmann", name: "Heath Hofmann", en: "Heath Hofmann", label: "H. Hofmann", org: "密歇根大学", country: "美国", region: "北美", field: "control",
+      tags: ["永磁电机", "电动汽车"],
+      note: "密歇根大学教授，电机控制与能量转换。" },
+    { id: "kirtley", name: "James L. Kirtley", en: "James L. Kirtley", label: "J. Kirtley", org: "麻省理工学院", country: "美国", region: "北美", field: "design", major: true, badge: "NAE 院士",
+      tags: ["超导", "电磁计算/优化"],
+      note: "麻省理工学院教授，电机设计与超导电机。" },
+    { id: "leeb", name: "Steven B. Leeb", en: "Steven B. Leeb", label: "S. Leeb", org: "麻省理工学院", country: "美国", region: "北美", field: "system",
+      tags: ["故障诊断", "电力电子"],
+      note: "麻省理工学院教授，电气系统监测与故障诊断。" },
+    { id: "sarlioglu", name: "Bulent Sarlioglu", en: "Bulent Sarlioglu", label: "B. Sarlioglu", org: "威斯康星大学麦迪逊分校", country: "美国", region: "北美", field: "design",
+      tags: ["航空/船舶", "永磁电机"],
+      note: "威斯康星大学麦迪逊分校教授，高功率密度电机。" },
+    { id: "husain", name: "Iqbal Husain", en: "Iqbal Husain", label: "I. Husain", org: "北卡罗来纳州立大学", country: "美国", region: "北美", field: "drive", major: true,
+      tags: ["电动汽车", "永磁电机"],
+      note: "北卡罗来纳州立大学教授，电机驱动与电动汽车。" },
+    { id: "fahimi", name: "Babak Fahimi", en: "Babak Fahimi", label: "B. Fahimi", org: "德州大学达拉斯分校", country: "美国", region: "北美", field: "design",
+      tags: ["永磁电机", "开关磁阻"],
+      note: "德州大学达拉斯分校教授，电机设计与驱动。" },
+    { id: "parsa", name: "Leila Parsa", en: "Leila Parsa", label: "L. Parsa", org: "加州大学圣克鲁兹分校", country: "美国", region: "北美", field: "drive",
+      tags: ["多相/容错", "永磁电机"],
+      note: "加州大学圣克鲁兹分校教授，多相电机驱动。" },
+    { id: "mi_chris", name: "Chris Mi", en: "Chris Mi", label: "C. Mi", org: "圣地亚哥州立大学", country: "美国", region: "北美", field: "drive",
+      tags: ["电动汽车", "电力电子"],
+      note: "圣地亚哥州立大学教授，电动汽车与无线充电。" },
+    { id: "pillay", name: "Pragasen Pillay", en: "Pragasen Pillay", label: "P. Pillay", org: "康考迪亚大学", country: "加拿大", region: "北美", field: "drive",
+      tags: ["永磁电机", "风电"],
+      note: "康考迪亚大学教授，电机驱动与能效。" },
+    { id: "jatskevich", name: "Juri Jatskevich", en: "Juri Jatskevich", label: "J. Jatskevich", org: "不列颠哥伦比亚大学", country: "加拿大", region: "北美", field: "system",
+      tags: ["电磁计算/优化", "电力电子"],
+      note: "不列颠哥伦比亚大学教授，电机与电力系统建模。" },
+    { id: "kar", name: "Narayan C. Kar", en: "Narayan C. Kar", label: "N. Kar", org: "温莎大学", country: "加拿大", region: "北美", field: "design",
+      tags: ["电动汽车", "永磁电机"],
+      note: "温莎大学教授，车用电机设计。" },
+    { id: "strangas", name: "Elias Strangas", en: "Elias Strangas", label: "E. Strangas", org: "密歇根州立大学", country: "美国", region: "北美", field: "control",
+      tags: ["故障诊断", "永磁电机"],
+      note: "密歇根州立大学教授，电机故障诊断。" },
+    { id: "demerdash", name: "Nabeel Demerdash", en: "Nabeel Demerdash", label: "N. Demerdash", org: "马凯特大学", country: "美国", region: "北美", field: "design",
+      tags: ["电磁计算/优化", "永磁电机"],
+      note: "马凯特大学荣休教授，电机电磁场计算。" },
+    { id: "lukic", name: "Srdjan Lukic", en: "Srdjan Lukic", label: "S. Lukic", org: "北卡罗来纳州立大学", country: "美国", region: "北美", field: "drive",
+      tags: ["电动汽车", "电力电子"],
+      note: "北卡罗来纳州立大学教授，电力电子与电动汽车。" },
+
+    /* ---------------- 亚太其他 ---------------- */
+    { id: "rahman", name: "Faz Rahman", en: "M. Fazlur Rahman", label: "F. Rahman", org: "新南威尔士大学", country: "澳大利亚", region: "亚太", field: "design", major: true,
+      tags: ["永磁电机", "电动汽车"],
+      note: "新南威尔士大学教授，IEEE Fellow，永磁电机与驱动。" },
+    { id: "sul", name: "Seung-Ki Sul", en: "Seung-Ki Sul", label: "S.-K. Sul", org: "首尔大学", country: "韩国", region: "亚太", field: "drive", major: true,
+      tags: ["永磁电机", "无位置传感器"],
+      note: "首尔大学教授，电机驱动、无位置传感器控制与 PWM 技术。" },
+    { id: "ogasawara", name: "Satoshi Ogasawara", en: "Satoshi Ogasawara", label: "S. Ogasawara", org: "大阪大学", country: "日本", region: "亚太", field: "control",
+      tags: ["无位置传感器", "永磁电机"],
+      note: "大阪大学教授，无位置传感器控制。" },
+    { id: "kwon", name: "Byung-Il Kwon", en: "Byung-Il Kwon", label: "B.-I. Kwon", org: "汉阳大学", country: "韩国", region: "亚太", field: "design",
+      tags: ["永磁电机", "电磁计算/优化"],
+      note: "汉阳大学教授，电机设计与优化。" },
+    { id: "doki", name: "Shinji Doki", en: "Shinji Doki", label: "S. Doki", org: "名古屋大学", country: "日本", region: "亚太", field: "control",
+      tags: ["无位置传感器", "伺服/机器人"],
+      note: "名古屋大学教授，电机控制与信号处理。" }
+  ],
+
+  edges: [
+    /* 师承（有向：导师 → 学生） */
+    { s: "lipo", t: "toliyat", type: "advise", conf: "high", note: "UW-Madison 博士（1991 前后）" },
+    { s: "lipo", t: "xu_longya", type: "advise", conf: "med", note: "UW-Madison 博士（1990 前后）" },
+    { s: "lipo", t: "qu_ronghai", type: "advise", conf: "high", note: "UW-Madison 博士（2002），WEMPEC；后任 GE 研发、华中科技大学" },
+    { s: "jahns", t: "elrefaie", type: "advise", conf: "high", note: "UW-Madison 博士（2005 前后），后同赴 GE 研发" },
+    { s: "howe_david", t: "zhu_zq", type: "advise", conf: "med", note: "Sheffield 博士，此后长期同组合作" },
+    { s: "zhu_zq", t: "wu_lijian", type: "advise", conf: "high", note: "2008–2011 年 Sheffield 博士，诸自强指导" },
+    { s: "gerada_chris", t: "huang_xiaoyan", type: "advise", conf: "med", note: "2008 年 Nottingham 博士，与 Gerada 合作发表（师承据公开履历推断）" },
+    { s: "bolognani_silverio", t: "bianchi_nicola", type: "advise", conf: "high", note: "Padova 博士，留校任教" },
+    { s: "cheng_ming", t: "hua_wei", type: "advise", conf: "high", note: "东南大学博士，留校任教" },
+    { s: "he_yikang", t: "nian_heng", type: "advise", conf: "high", note: "浙江大学博士，留校任教" },
+    { s: "ma_weiming", t: "wang_dong", type: "advise", conf: "high", note: "海军工程大学团队，舰船电机方向" },
+    { s: "tang_renyuan", t: "zhang_fengge", type: "advise", conf: "med", note: "沈阳工大永磁电机团队" },
+    { s: "tang_renyuan", t: "li_yan_sut", type: "advise", conf: "low", note: "沈阳工大永磁电机团队（师承细节待核实）" },
+    { s: "xu_dianguo", t: "wang_gaolin", type: "advise", conf: "high", note: "哈工大博士，留校任教" },
+    { s: "xu_dianguo", t: "yang_ming_hit", type: "advise", conf: "high", note: "哈工大博士，留校任教" },
+    { s: "chau_kt", t: "niu_shuangxia", type: "advise", conf: "med", note: "牛双霞 2009 年于香港大学获博士，邹国棠为港大电机方向负责人（师承关系据公开履历推断）" },
+    { s: "cchan", t: "chau_kt", type: "topic", conf: "high", note: "香港电动车与电机驱动研究" },
+    { s: "kwcheng", t: "chau_kt", type: "topic", conf: "med", note: "电动汽车驱动与电力电子" },
+    { s: "chau_kt", t: "liu_chunhua", type: "advise", conf: "med", note: "2009 年于香港大学获博士，与牛双霞同年；师承关系据公开履历推断" },
+    { s: "chau_kt", t: "jiang_chaoqiang", type: "advise", conf: "high", note: "2019 年港大博士，邹国棠与陈清泉共同指导" },
+    { s: "cchan", t: "jiang_chaoqiang", type: "advise", conf: "high", note: "与邹国棠共同指导其博士研究" },
+    { s: "liu_chunhua", t: "niu_shuangxia", type: "collab", conf: "high", note: "磁齿轮/永磁电机合作，近期有共同论文" },
+    { s: "jiang_chaoqiang", t: "liu_chunhua", type: "team", conf: "high", note: "香港城市大学同事" },
+    { s: "niu_shuangxia", t: "jiang_mingyuan", type: "advise", conf: "high", note: "牛双霞指导的博士（2024），毕业后留校任研究助理教授" },
+    { s: "cao_guangzhong", t: "huang_sudan", type: "team", conf: "high", note: "深圳大学磁悬浮/平面电机团队" },
+    { s: "li_yongdong", t: "zheng_zedong", type: "advise", conf: "low", note: "清华团队（师承细节待核实）" },
+    { s: "deng_zhiquan", t: "zhang_zhuoran", type: "advise", conf: "low", note: "南航团队（师承细节待核实）" },
+
+    /* 团队 / 同一课题组 */
+    { s: "gu_guobiao", t: "wen_xuhui", type: "team", conf: "high", note: "电工所蒸发冷却与电动汽车电驱动团队" },
+    { s: "li_liyi", t: "kou_baoquan", type: "team", conf: "high", note: "哈工大直线电机与电磁弹射团队" },
+    { s: "zhao_wenxiang", t: "liu_guohai", type: "team", conf: "high", note: "江苏大容错电机与驱动团队" },
+    { s: "fang_youtong", t: "lu_qinfen", type: "team", conf: "med", note: "浙大电机与直线电机团队" },
+    { s: "shen_jianxin", t: "fang_youtong", type: "team", conf: "med", note: "浙大电机设计团队" },
+    { s: "deng_zhiquan", t: "zhang_zhuoran", type: "team", conf: "med", note: "南航航空电机团队" },
+
+    /* 合作 / 共同作者 */
+    { s: "lipo", t: "novotny", type: "collab", conf: "high", note: "UW-Madison WEMPEC 同事与共同作者" },
+    { s: "lipo", t: "jahns", type: "collab", conf: "med", note: "WEMPEC 同事" },
+    { s: "jahns", t: "lorenz", type: "collab", conf: "med", note: "WEMPEC 同事" },
+    { s: "jahns", t: "sarlioglu", type: "collab", conf: "med", note: "UW-Madison 同事" },
+    { s: "gerada_chris", t: "wheeler_patrick", type: "collab", conf: "high", note: "Nottingham PEMC 同事" },
+    { s: "mecrow_barrie", t: "mellor_phil", type: "collab", conf: "high", note: "英国航空电机与驱动长期合作" },
+    { s: "gerada_chris", t: "mecrow_barrie", type: "collab", conf: "low", note: "英国航空电推进社区（合作待核实）" },
+    { s: "zhu_zq", t: "gerada_chris", type: "collab", conf: "low", note: "英国电机社区（合作待核实）" },
+    { s: "hua_wei", t: "zhu_zq", type: "collab", conf: "high", note: "2004–2005 年在 Sheffield 联合培养，合作导师诸自强" },
+    { s: "husain", t: "lukic", type: "collab", conf: "high", note: "NC State 同事" },
+    { s: "gu_chenglin", t: "qu_ronghai", type: "collab", conf: "high", note: "华中科大同事" },
+    { s: "yang_kai_hust", t: "qu_ronghai", type: "collab", conf: "high", note: "华中科大同事" },
+    { s: "zou_jibin", t: "xu_dianguo", type: "collab", conf: "high", note: "哈工大同事" },
+    { s: "li_liyi", t: "xu_dianguo", type: "collab", conf: "med", note: "哈工大同事" },
+    { s: "zhao_zhengming", t: "li_yongdong", type: "collab", conf: "high", note: "清华电机系同事" },
+    { s: "zhang_pinjia", t: "zhao_zhengming", type: "collab", conf: "med", note: "清华电气团队" },
+    { s: "jiang_dong", t: "zhao_zhengming", type: "collab", conf: "med", note: "清华电气团队" },
+    { s: "zhao_wenxiang", t: "cheng_ming", type: "collab", conf: "med", note: "容错永磁电机合作" },
+    { s: "wu_lijian", t: "huang_xiaoyan", type: "collab", conf: "high", note: "浙大电机团队，长期共同发表" },
+    { s: "emadi", t: "mi_chris", type: "collab", conf: "med", note: "电动汽车动力总成社区" },
+
+    /* 同一技术路线 / 研究方向相近 */
+    { s: "qu_ronghai", t: "niu_shuangxia", type: "topic", conf: "high", note: "集成绕组/双端口电机：华中科大团队与 PolyU 团队的先后研究" },
+    { s: "chau_kt", t: "niu_shuangxia", type: "topic", conf: "high", note: "磁场调制 / 磁齿轮方向" },
+    { s: "xia_changliang", t: "he_yikang", type: "topic", conf: "high", note: "风电与永磁直驱控制" },
+    { s: "li_yongdong", t: "xu_dianguo", type: "topic", conf: "high", note: "高性能交流电机驱动" },
+    { s: "jiang_dong", t: "wang_gaolin", type: "topic", conf: "high", note: "无位置传感器控制" },
+    { s: "kennel_ralph", t: "bolognani_silverio", type: "topic", conf: "med", note: "模型预测 / 无位置传感器控制" },
+    { s: "briz_fernando", t: "strangas", type: "topic", conf: "med", note: "电机故障诊断" },
+    { s: "ogasawara", t: "bolognani_silverio", type: "topic", conf: "high", note: "无位置传感器控制" },
+    { s: "kwon", t: "hameyer_kay", type: "topic", conf: "med", note: "电机电磁设计与优化" },
+    { s: "rahman", t: "zhu_zq", type: "topic", conf: "med", note: "永磁电机与驱动" },
+    { s: "wang_xiuhe", t: "cheng_ming", type: "topic", conf: "med", note: "永磁电机设计" },
+    { s: "huang_surong", t: "cai_wei", type: "topic", conf: "med", note: "车用驱动电机" },
+    { s: "wen_xuhui", t: "cai_wei", type: "topic", conf: "med", note: "电动汽车电驱动" },
+    { s: "liu_weiguo", t: "zhang_zhuoran", type: "topic", conf: "med", note: "航空电机系统" },
+    { s: "huang_shoudao", t: "xia_changliang", type: "topic", conf: "med", note: "风电电机与驱动" },
+    { s: "kang_jinsong", t: "wen_xuhui", type: "topic", conf: "low", note: "电动汽车电驱动" },
+    { s: "huang_sudan", t: "lu_qinfen", type: "topic", conf: "med", note: "直线/平面电机与精密运动控制" },
+    { s: "sul", t: "husain", type: "topic", conf: "low", note: "电动汽车驱动" }
+  ]
+};
+
+</script>
+  <script>
+/* 电机研究网络 — 交互式力导向图谱（无外部依赖） */
+(function () {
+  "use strict";
+
+  const DATA = window.MOTOR_DATA;
+  if (!DATA) { console.error("MOTOR_DATA missing"); return; }
+
+  /* ---------------- 配置 ---------------- */
+  const FIELDS = {
+    design:  { label: "电机设计", color: "#22d3ee" },
+    drive:   { label: "驱动 / 电力电子", color: "#fbbf24" },
+    control: { label: "控制", color: "#a78bfa" },
+    system:  { label: "系统 / 诊断", color: "#34d399" }
+  };
+  const CAREER = {
+    senior: { label: "资深", color: "#e2e8f0" },
+    mid:    { label: "中坚", color: "#94a3b8" },
+    early:  { label: "青年", color: "#38bdf8" }
+  };
+  const REGIONS = {
+    "中国": { label: "中国内地", anchor: [300, 480] },
+    "中国香港": { label: "中国香港", anchor: [640, 660] },
+    "欧洲": { label: "欧洲 / 英国", anchor: [760, 220] },
+    "北美": { label: "北美", anchor: [1120, 480] },
+    "亚太": { label: "亚太（日韩澳）", anchor: [880, 860] }
+  };
+  const EDGES = {
+    advise: { label: "师承", color: "#fb923c", priority: 5 },
+    collab: { label: "合作", color: "#38bdf8", priority: 4 },
+    team:   { label: "同团队", color: "#64748b", priority: 3 },
+    topic:  { label: "同方向", color: "#c084fc", priority: 2 },
+    org:    { label: "同机构", color: "#475569", priority: 1 }
+  };
+  const CONF = { high: "●", med: "◐", low: "○" };
+  const CONF_LABEL = { high: "已核实", med: "较可信", low: "待核实" };
+  // 概览层只标注这些“锚点人物”，其余在放大/悬停/点选时出现
+  const STAR_IDS = new Set([
+    "lipo", "jahns", "kirtley", "emadi", "toliyat",
+    "zhu_zq", "gerada_chris", "bolognani_silverio", "bianchi_nicola", "hameyer_kay", "pyrhonen_juha",
+    "tang_renyuan", "ma_weiming", "xia_changliang", "cheng_ming", "qu_ronghai", "niu_shuangxia", "chau_kt", "cchan", "liu_chunhua", "huang_sudan",
+    "li_yongdong", "he_yikang", "xu_dianguo",
+    "rahman", "sul"
+  ]);
+  // 资深：院士 / IEEE Fellow / 讲席或荣休教授 / 领域奠基者（编辑判断）
+  const SENIOR_IDS = new Set([
+    "tang_renyuan", "gu_guobiao", "ma_weiming", "xia_changliang", "cchan", "cheng_ming", "chau_kt",
+    "li_yongdong", "xu_dianguo", "qu_ronghai", "cai_wei", "hua_wei", "wu_lijian", "zhao_wenxiang",
+    "zhu_zq", "howe_david", "gerada_chris", "wheeler_patrick", "mecrow_barrie", "mellor_phil",
+    "hameyer_kay", "bolognani_silverio", "bianchi_nicola", "lomonova_elena", "pyrhonen_juha",
+    "blaabjerg_frede", "kennel_ralph", "briz_fernando",
+    "lipo", "novotny", "jahns", "lorenz", "toliyat", "kirtley", "elrefaie", "ionel", "emadi", "xu_longya",
+    "rahman", "sul"
+  ]);
+  // 青年：博士毕业约 10 年内、当前为助理/副教授或研究助理教授
+  const EARLY_IDS = new Set([
+    "jiang_mingyuan", "jiang_chaoqiang", "huang_sudan", "jiang_dong", "zheng_zedong", "zhang_pinjia"
+  ]);
+  const careerOf = (id) => (EARLY_IDS.has(id) ? "early" : SENIOR_IDS.has(id) ? "senior" : "mid");
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = (s) => document.querySelector(s);
+
+  /* ---------------- 数据整理 ---------------- */
+  const nodes = DATA.nodes.map((n) => ({
+    ...n, x: 0, y: 0, vx: 0, vy: 0, fx: 0, fy: 0, r: 7, deg: 0, lx: 0, ly: 0, lanchor: "middle", fixed: false,
+    career: careerOf(n.id)
+  }));
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+
+  const manual = [];
+  const pairSeen = new Map();
+  const prio = (t) => (EDGES[t] ? EDGES[t].priority : 0);
+  DATA.edges.forEach((e) => {
+    const a = byId.get(e.s), b = byId.get(e.t);
+    if (!a || !b || a === b) return;
+    const key = [e.s, e.t].sort().join("|");
+    const prev = pairSeen.get(key);
+    if (prev) {
+      if (prio(e.type) > prio(prev.type)) manual[prev.i] = { ...e };
+      return;
+    }
+    pairSeen.set(key, { i: manual.length, type: e.type });
+    manual.push({ ...e });
+  });
+
+  const links = manual.slice();
+  const orgGroups = new Map();
+  nodes.forEach((n) => {
+    if (!orgGroups.has(n.org)) orgGroups.set(n.org, []);
+    orgGroups.get(n.org).push(n);
+  });
+  const manualDeg = {};
+  manual.forEach((e) => { manualDeg[e.s] = (manualDeg[e.s] || 0) + 1; manualDeg[e.t] = (manualDeg[e.t] || 0) + 1; });
+  orgGroups.forEach((group) => {
+    if (group.length < 2) return;
+    const hub = group.slice().sort((a, b) => (manualDeg[b.id] || 0) - (manualDeg[a.id] || 0) || b.deg - a.deg)[0];
+    group.forEach((n) => {
+      if (n === hub) return;
+      const key = [hub.id, n.id].sort().join("|");
+      if (pairSeen.has(key)) return;
+      pairSeen.set(key, { i: -1, type: "org" });
+      links.push({ s: hub.id, t: n.id, type: "org", conf: "high", note: "同机构：" + n.org });
+    });
+  });
+
+  const adj = new Map(nodes.map((n) => [n.id, []]));
+  links.forEach((l) => {
+    const a = byId.get(l.s), b = byId.get(l.t);
+    l.a = a; l.b = b;
+    adj.get(a.id).push({ node: b, edge: l });
+    adj.get(b.id).push({ node: a, edge: l });
+    a.deg++; b.deg++;
+  });
+  nodes.forEach((n) => { n.r = 5.4 + 2.0 * Math.sqrt(n.deg) + (n.major ? 1.2 : 0); });
+
+  /* ---------------- 状态 ---------------- */
+  const allFields = Object.keys(FIELDS);
+  const allRegions = Object.keys(REGIONS);
+  const allEdges = ["advise", "collab", "team", "topic", "org"];
+  const state = {
+    fields: new Set(allFields),
+    regions: new Set(allRegions),
+    edgeTypes: new Set(["advise", "collab", "team", "topic"]),
+    tags: new Set(),
+    careers: new Set(["senior", "mid", "early"]),
+    hideYouth: false,
+    selected: null,
+    hover: null,
+    focus: null,
+    preset: "all"
+  };
+
+  const stage = $("#stage");
+  const svg = $("#graph");
+  const world = $("#world");
+  const edgeLayer = $("#edgeLayer");
+  const nodeLayer = $("#nodeLayer");
+  const regionLayer = $("#regionLayer");
+  const glowLayer = $("#glowLayer");
+  const tooltip = $("#tooltip");
+  const detail = $("#detail");
+
+  const cam = { x: 0, y: 0, k: 1 };
+  let stageW = stage.clientWidth, stageH = stage.clientHeight;
+  let alpha = 1, dirty = true;
+  let draggingNode = null, panning = false, moved = false;
+  let down = null, camAnim = null, labelTimer = 0, tagTotal = 0;
+
+  /* ---------------- SVG ---------------- */
+  function el(tag, attrs) {
+    const e = document.createElementNS(NS, tag);
+    if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  const REGION_TINT = { "中国": "#38bdf8", "中国香港": "#fb7185", "欧洲": "#818cf8", "北美": "#34d399", "亚太": "#fbbf24" };
+  const regionTags = [];
+  const glowDefs = el("defs");
+  svg.insertBefore(glowDefs, svg.firstChild);
+  Object.entries(REGIONS).forEach(([key, r], i) => {
+    const grad = el("radialGradient", { id: "region-glow-" + i });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": REGION_TINT[key] || "#38bdf8", "stop-opacity": "0.11" }));
+    grad.appendChild(el("stop", { offset: "55%", "stop-color": REGION_TINT[key] || "#38bdf8", "stop-opacity": "0.045" }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": REGION_TINT[key] || "#38bdf8", "stop-opacity": "0" }));
+    glowDefs.appendChild(grad);
+
+    const glow = el("circle", { class: "region-glow", cx: r.anchor[0], cy: r.anchor[1], r: 200, fill: `url(#region-glow-${i})` });
+    glowLayer.appendChild(glow);
+
+    const g = el("g");
+    const line = el("line", { class: "region-line" });
+    const t = el("text", { class: "region-tag", "font-size": 12 });
+    t.textContent = r.label;
+    g.appendChild(line);
+    g.appendChild(t);
+    regionLayer.appendChild(g);
+    regionTags.push({ key, el: t, line, g, glow });
+  });
+
+  function placeRegionTags() {
+    for (const tag of regionTags) {
+      const g = nodes.filter((n) => n.region === tag.key && isVisible(n));
+      if (!g.length) { tag.g.style.display = "none"; tag.glow.style.display = "none"; continue; }
+      tag.g.style.display = "";
+      tag.glow.style.display = "";
+      const cx = g.reduce((s, n) => s + n.x, 0) / g.length;
+      const cy = g.reduce((s, n) => s + n.y, 0) / g.length;
+      const minY = Math.min(...g.map((n) => n.y));
+      const maxY = Math.max(...g.map((n) => n.y));
+      const rad = Math.max(...g.map((n) => Math.hypot(n.x - cx, n.y - cy))) + 60;
+      const y = tag.key === "亚太" ? maxY + 44 : minY - 30;
+      tag.el.setAttribute("x", cx.toFixed(0));
+      tag.el.setAttribute("y", y.toFixed(0));
+      tag.line.setAttribute("x1", (cx - 26).toFixed(0));
+      tag.line.setAttribute("x2", (cx + 26).toFixed(0));
+      tag.line.setAttribute("y1", (y + 7).toFixed(0));
+      tag.line.setAttribute("y2", (y + 7).toFixed(0));
+      tag.glow.setAttribute("cx", cx.toFixed(0));
+      tag.glow.setAttribute("cy", cy.toFixed(0));
+      tag.glow.setAttribute("r", rad.toFixed(0));
+    }
+  }
+
+  links.forEach((l) => {
+    const line = el("line", { class: "edge edge-" + l.type });
+    if (l.conf === "low") line.classList.add("conf-low");
+    edgeLayer.appendChild(line);
+    l.el = line;
+  });
+
+  const ordered = nodes.slice().sort((a, b) => (a.major === b.major ? b.deg - a.deg : a.major ? -1 : 1));
+  ordered.forEach((n) => {
+    const color = FIELDS[n.field] ? FIELDS[n.field].color : "#94a3b8";
+    const g = el("g", { class: "node career-" + n.career + (n.major ? " major" : "") + (n.major ? "" : " minor") });
+    g.dataset.id = n.id;
+    g.style.color = color;
+    const halo = el("circle", { class: "halo", r: n.r + 8, fill: color });
+    const dot = el("circle", { class: "dot", r: n.r, fill: color });
+    const label = el("text", { class: "label", "font-size": 12, x: 0, y: n.r + 14 });
+    label.textContent = n.label;
+    if (n.badge) {
+      g.appendChild(el("circle", { class: "badge-ring", r: n.r + 3, fill: "none", stroke: "#f5c451", "stroke-width": 1.4, opacity: 0.85 }));
+    } else if (n.career === "senior") {
+      g.appendChild(el("circle", { class: "ring-senior", r: n.r + 3.6, fill: "none" }));
+    }
+    if (n.career === "early") {
+      g.appendChild(el("circle", { class: "ring-early", r: n.r + 4.6, fill: "none" }));
+    }
+    g.appendChild(halo);
+    g.appendChild(dot);
+    g.appendChild(label);
+    nodeLayer.appendChild(g);
+    n.el = g; n.labelEl = label;
+  });
+
+  /* ---------------- 物理 ---------------- */
+  const CHARGE = 700;
+  const REGION_K = 0.0055;
+  const LINK_K = { advise: 0.10, collab: 0.07, team: 0.08, topic: 0.06, org: 0.05 };
+  const REST = { advise: 120, collab: 148, team: 96, topic: 140, org: 84 };
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rnd = mulberry32(20261104);
+
+  nodes.forEach((n) => {
+    const a = REGIONS[n.region] ? REGIONS[n.region].anchor : [700, 450];
+    const ang = rnd() * Math.PI * 2;
+    const rad = 40 + rnd() * 170;
+    n.x = a[0] + Math.cos(ang) * rad;
+    n.y = a[1] + Math.sin(ang) * rad;
+  });
+
+  function tick() {
+    for (const n of nodes) { n.fx = 0; n.fy = 0; }
+
+    for (const l of links) {
+      const a = l.a, b = l.b;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const k = LINK_K[l.type] || 0.05;
+      const rest = REST[l.type] || 130;
+      const f = ((d - rest) / d) * k;
+      a.fx += dx * f; a.fy += dy * f;
+      b.fx -= dx * f; b.fy -= dy * f;
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 0.01) { dx = 0.3; dy = 0.2; d2 = 0.13; }
+        const d = Math.sqrt(d2);
+        const f = CHARGE / d2;
+        const ux = dx / d, uy = dy / d;
+        a.fx -= ux * f; a.fy -= uy * f;
+        b.fx += ux * f; b.fy += uy * f;
+        const min = a.r + b.r + 7;
+        if (d < min) {
+          const push = (min - d) * 0.4;
+          a.fx -= ux * push; a.fy -= uy * push;
+          b.fx += ux * push; b.fy += uy * push;
+        }
+      }
+    }
+
+    for (const n of nodes) {
+      const a = REGIONS[n.region] ? REGIONS[n.region].anchor : [700, 450];
+      n.fx += (a[0] - n.x) * REGION_K;
+      n.fy += (a[1] - n.y) * REGION_K;
+      n.vx = (n.vx + n.fx) * 0.86;
+      n.vy = (n.vy + n.fy) * 0.86;
+      const sp = Math.hypot(n.vx, n.vy);
+      if (sp > 9) { n.vx = n.vx / sp * 9; n.vy = n.vy / sp * 9; }
+      if (!n.fixed) { n.x += n.vx; n.y += n.vy; }
+      n.x = Math.max(-150, Math.min(1550, n.x));
+      n.y = Math.max(-100, Math.min(1050, n.y));
+    }
+  }
+
+  for (let i = 0; i < 500; i++) tick();
+  nodes.forEach((n) => { n.vx = 0; n.vy = 0; });
+  alpha = 0;
+
+  /* ---------------- 渲染 ---------------- */
+  function applyCam() {
+    world.setAttribute("transform", `translate(${cam.x.toFixed(2)},${cam.y.toFixed(2)}) scale(${cam.k.toFixed(4)})`);
+  }
+
+  function updatePositions() {
+    for (const n of nodes) {
+      n.el.setAttribute("transform", `translate(${n.x.toFixed(2)},${n.y.toFixed(2)})`);
+      n.labelEl.setAttribute("x", n.lx.toFixed(1));
+      n.labelEl.setAttribute("y", n.ly.toFixed(1));
+      n.labelEl.setAttribute("text-anchor", n.lanchor);
+    }
+    for (const l of links) {
+      const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const ux = dx / d, uy = dy / d;
+      l.el.setAttribute("x1", (l.a.x + ux * (l.a.r + 2)).toFixed(1));
+      l.el.setAttribute("y1", (l.a.y + uy * (l.a.r + 2)).toFixed(1));
+      l.el.setAttribute("x2", (l.b.x - ux * (l.b.r + 4)).toFixed(1));
+      l.el.setAttribute("y2", (l.b.y - uy * (l.b.r + 4)).toFixed(1));
+    }
+    applyCam();
+    dirty = false;
+  }
+
+  function measure(t, size) {
+    let w = 0;
+    for (const ch of t) w += /[\u2e80-\u9fff\uff00-\uffef]/.test(ch) ? size * 1.02 : size * 0.60;
+    return w;
+  }
+  function overlap(a, b, pad) {
+    return !(a[0] + a[2] + pad < b[0] || b[0] + b[2] + pad < a[0] || a[1] + a[3] + pad < b[1] || b[1] + b[3] + pad < a[1]);
+  }
+
+  let labelOverlaps = 0;
+  function layoutLabels() {
+    const placed = [];
+    labelOverlaps = 0;
+    const vis = nodes.filter((n) => isVisible(n));
+    const nodeRects = vis.map((n) => [n.x - n.r - 1, n.y - n.r - 1, n.r * 2 + 2, n.r * 2 + 2]);
+    const zoomed = cam.k > 1.02;
+    const candsOf = (n, size) => {
+      const w = measure(n.label, size);
+      const h = size + 3;
+      const b = n.r + 3;
+      return [
+        { dx: 0, dy: b + size + 2, anchor: "middle", rect: [n.x - w / 2, n.y + b, w, h] },
+        { dx: 0, dy: -n.r - 6, anchor: "middle", rect: [n.x - w / 2, n.y - n.r - 6 - h, w, h] },
+        { dx: n.r + 7, dy: 4, anchor: "start", rect: [n.x + n.r + 7, n.y + 4 - h / 2, w, h] },
+        { dx: -n.r - 7, dy: 4, anchor: "end", rect: [n.x - n.r - 7 - w, n.y + 4 - h / 2, w, h] },
+        { dx: 0, dy: b + size + 25, anchor: "middle", rect: [n.x - w / 2, n.y + b + 23, w, h] },
+        { dx: 0, dy: -n.r - 29, anchor: "middle", rect: [n.x - w / 2, n.y - n.r - 29 - h, w, h] },
+        { dx: n.r + 32, dy: 4, anchor: "start", rect: [n.x + n.r + 32, n.y + 4 - h / 2, w, h] },
+        { dx: -n.r - 32, dy: 4, anchor: "end", rect: [n.x - n.r - 32 - w, n.y + 4 - h / 2, w, h] }
+      ];
+    };
+
+    const ordered = vis.slice().sort((a, b) => (STAR_IDS.has(b.id) ? 1 : 0) - (STAR_IDS.has(a.id) ? 1 : 0) || (b.major ? 1 : 0) - (a.major ? 1 : 0) || b.deg - a.deg);
+    for (const n of ordered) {
+      const inView = n.x * cam.k + cam.x > -90 && n.x * cam.k + cam.x < stageW + 90 &&
+                     n.y * cam.k + cam.y > -60 && n.y * cam.k + cam.y < stageH + 60;
+      const show = STAR_IDS.has(n.id) || (zoomed && inView) || n.id === state.selected;
+      if (!show) { n.labelEl.style.display = "none"; continue; }
+      n.labelEl.style.display = "";
+      const size = n.major ? 13 : 12;
+      const cands = candsOf(n, size);
+      let best = null;
+      for (const c of cands) {
+        if (placed.some((p) => overlap(p, c.rect, 2))) continue;
+        if (nodeRects.some((r, i) => vis[i] !== n && overlap(r, c.rect, 2))) continue;
+        best = c; break;
+      }
+      if (!best) {
+        labelOverlaps++;
+        if (n.id === state.selected) best = cands[0];
+        else { n.labelEl.style.display = "none"; continue; }
+      }
+      placed.push(best.rect);
+      n.lx = best.dx; n.ly = best.dy; n.lanchor = best.anchor;
+      n.labelEl.setAttribute("font-size", size);
+    }
+    updatePositions();
+  }
+
+  /* ---------------- 过滤 ---------------- */
+  function isVisible(n) {
+    if (!state.fields.has(n.field)) return false;
+    if (!state.regions.has(n.region)) return false;
+    if (!state.careers.has(n.career)) return false;
+    if (state.hideYouth && n.career === "early") return false;
+    if (state.tags.size && !n.tags.some((t) => state.tags.has(t))) return false;
+    if (state.focus && !state.focus.has(n.id)) return false;
+    return true;
+  }
+  function isEdgeVisible(l) {
+    return state.edgeTypes.has(l.type) && isVisible(l.a) && isVisible(l.b);
+  }
+
+  function updateChipCounts() {
+    const set = (id, a, b) => { const el = document.getElementById(id); if (el) el.textContent = a + "/" + b; };
+    set("cntFields", state.fields.size, allFields.length);
+    set("cntCareers", state.careers.size, 3);
+    set("cntRegions", state.regions.size, allRegions.length);
+    set("cntEdges", state.edgeTypes.size, allEdges.length);
+    set("cntTags", state.tags.size, tagTotal);
+  }
+
+  function applyFilters() {
+    syncChipStates();
+    updateChipCounts();
+    let vn = 0;
+    nodes.forEach((n) => {
+      const ok = isVisible(n);
+      if (ok) vn++;
+      n.el.classList.toggle("hidden", !ok);
+      n.el.classList.toggle("removed", state.hideYouth && n.career === "early");
+    });
+    links.forEach((l) => {
+      l.el.classList.toggle("hidden", !isEdgeVisible(l));
+      l.el.classList.toggle("removed", state.hideYouth && (l.a.career === "early" || l.b.career === "early"));
+    });
+    applyEmphasis();
+    layoutLabels();
+    placeRegionTags();
+    $("#statNodes").textContent = vn === nodes.length ? String(nodes.length) : vn + "/" + nodes.length;
+    dirty = true;
+  }
+
+  /* ---------------- 高亮 ---------------- */
+  function applyEmphasis() {
+    const active = state.hover || state.selected;
+    if (!active) {
+      nodes.forEach((n) => n.el.classList.remove("dimmed", "hl"));
+      links.forEach((l) => l.el.classList.remove("hl", "soft"));
+      return;
+    }
+    const keep = new Set([active]);
+    (adj.get(active) || []).forEach((o) => keep.add(o.node.id));
+    nodes.forEach((n) => {
+      n.el.classList.toggle("dimmed", !keep.has(n.id));
+      n.el.classList.toggle("hl", keep.has(n.id) && n.id !== active);
+    });
+    links.forEach((l) => {
+      const on = l.a.id === active || l.b.id === active;
+      l.el.classList.toggle("hl", on);
+      l.el.classList.toggle("soft", !on);
+    });
+  }
+
+  /* ---------------- 详情 ---------------- */
+  function selectNode(id, center) {
+    const n = byId.get(id);
+    if (!n) return;
+    if (state.focus && !state.focus.has(id)) clearFocus();
+    state.selected = id;
+    state.hover = null;
+    hideTooltip();
+    nodes.forEach((x) => x.el.classList.toggle("selected", x.id === id));
+    applyEmphasis();
+    renderDetail(n);
+    detail.classList.add("open");
+    if (center) centerOn(n);
+    layoutLabels();
+  }
+
+  function clearSelection() {
+    state.selected = null;
+    nodes.forEach((x) => x.el.classList.remove("selected"));
+    detail.classList.remove("open");
+    applyEmphasis();
+    layoutLabels();
+  }
+
+  function centerOn(n) {
+    const k = Math.max(cam.k, 1.05);
+    animateCam({ k, x: stageW / 2 - n.x * k, y: stageH / 2 - n.y * k });
+  }
+
+  function animateCam(target) {
+    camAnim = { from: { ...cam }, to: target, t0: performance.now(), dur: 420 };
+  }
+
+  function stepCam(now) {
+    if (!camAnim) return;
+    const p = Math.min(1, (now - camAnim.t0) / camAnim.dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    cam.x = camAnim.from.x + (camAnim.to.x - camAnim.from.x) * e;
+    cam.y = camAnim.from.y + (camAnim.to.y - camAnim.from.y) * e;
+    cam.k = camAnim.from.k + (camAnim.to.k - camAnim.from.k) * e;
+    applyCam();
+    if (p >= 1) { camAnim = null; layoutLabels(); }
+    dirty = true;
+  }
+
+  function relRow(other, type, conf, note) {
+    const c = FIELDS[other.field] ? FIELDS[other.field].color : "#94a3b8";
+    const row = document.createElement("div");
+    row.className = "rel";
+    row.innerHTML = `<span class="rel-dot" style="background:${c}"></span><span class="rel-name"></span><span class="rel-conf" title="${CONF_LABEL[conf] || ""}">${CONF[conf] || ""}</span><span class="rel-sub"></span>`;
+    row.querySelector(".rel-name").textContent = other.name;
+    row.querySelector(".rel-sub").textContent = note || EDGES[type].label;
+    row.addEventListener("click", () => selectNode(other.id, true));
+    return row;
+  }
+
+  function section(title) {
+    const h = document.createElement("h3");
+    h.textContent = title;
+    return h;
+  }
+
+  function renderDetail(n) {
+    const color = FIELDS[n.field].color;
+    const incoming = links.filter((l) => l.type === "advise" && l.b.id === n.id);
+    const outgoing = links.filter((l) => l.type === "advise" && l.a.id === n.id);
+    const others = links.filter((l) => l.type !== "advise" && l.type !== "org" && (l.a.id === n.id || l.b.id === n.id));
+    const sameOrg = nodes.filter((o) => o.org === n.org && o.id !== n.id);
+    const otherOf = (l) => (l.a.id === n.id ? l.b : l.a);
+    const rank = { high: 0, med: 1, low: 2 };
+    const sortConf = (a, b) => (rank[a.conf] ?? 3) - (rank[b.conf] ?? 3);
+
+    detail.innerHTML = "";
+    const head = document.createElement("div");
+    head.className = "detail-head";
+    head.innerHTML = `<button class="detail-close" title="关闭">✕</button>
+      <h2 class="detail-name"></h2><div class="detail-en"></div>
+      <div class="detail-tags"><span class="pill field" style="color:${color}">${FIELDS[n.field].label}</span><span class="pill">${escapeHtml(n.region)}</span><span class="pill" style="color:${CAREER[n.career].color}">${CAREER[n.career].label}</span>${n.honor ? `<span class="pill" style="color:#7dd3fc;border-color:rgba(56,189,248,.4)">${escapeHtml(n.honor)}</span>` : ""}${n.badge ? `<span class="pill" style="color:#f5c451;border-color:rgba(245,196,81,.45)">${escapeHtml(n.badge)}</span>` : ""}${n.status ? `<span class="pill">${escapeHtml(n.status)}</span>` : ""}</div>`;
+    head.querySelector(".detail-name").textContent = n.name;
+    head.querySelector(".detail-en").textContent = n.en;
+    head.querySelector(".detail-close").addEventListener("click", clearSelection);
+    detail.appendChild(head);
+
+    const body = document.createElement("div");
+    body.className = "detail-body";
+
+    const meta = document.createElement("dl");
+    meta.className = "meta";
+    meta.innerHTML = `<dt>机构</dt><dd>${escapeHtml(n.org)}</dd>
+      <dt>国家</dt><dd>${escapeHtml(n.country)}</dd>
+      <dt>方向</dt><dd>${n.tags.map(escapeHtml).join(" · ")}</dd>
+      <dt>连接</dt><dd>${n.deg} 条（师承 ${incoming.length + outgoing.length} 条）</dd>`;
+    body.appendChild(meta);
+
+    const note = document.createElement("div");
+    note.className = "note";
+    note.textContent = n.note;
+    body.appendChild(note);
+
+    if (incoming.length) {
+      body.appendChild(section("导师"));
+      incoming.sort(sortConf).forEach((l) => body.appendChild(relRow(l.a, "advise", l.conf, l.note)));
+    }
+    if (outgoing.length) {
+      body.appendChild(section("学生 / 团队成员"));
+      outgoing.sort(sortConf).forEach((l) => body.appendChild(relRow(l.b, "advise", l.conf, l.note)));
+    }
+    if (others.length) {
+      body.appendChild(section("合作 · 同方向 · 同团队"));
+      const order = { advise: 0, collab: 1, team: 2, topic: 3, org: 4 };
+      others.sort((a, b) => order[a.type] - order[b.type] || sortConf(a, b))
+        .forEach((l) => body.appendChild(relRow(otherOf(l), l.type, l.conf, EDGES[l.type].label + " · " + (l.note || ""))));
+    }
+    if (sameOrg.length) {
+      body.appendChild(section("同机构"));
+      const wrap = document.createElement("div");
+      wrap.className = "org-list";
+      sameOrg.forEach((o) => {
+        const b = document.createElement("span");
+        b.className = "org-chip";
+        b.textContent = o.name;
+        b.addEventListener("click", () => selectNode(o.id, true));
+        wrap.appendChild(b);
+      });
+      body.appendChild(wrap);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "detail-actions";
+    const fb = document.createElement("button");
+    fb.className = "btn";
+    fb.textContent = "聚焦一度关系";
+    fb.addEventListener("click", () => focusOn(n.id, 1));
+    const sb = document.createElement("button");
+    sb.className = "btn";
+    sb.textContent = "检索主页";
+    sb.addEventListener("click", () => window.open("https://www.bing.com/search?q=" + encodeURIComponent(n.name + " " + n.en + " " + n.org), "_blank"));
+    actions.appendChild(fb); actions.appendChild(sb);
+    body.appendChild(actions);
+
+    detail.appendChild(body);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* ---------------- 聚焦 ---------------- */
+  function focusOn(id, depth) {
+    const seen = new Set([id]);
+    let frontier = [id];
+    for (let d = 0; d < depth; d++) {
+      const next = [];
+      frontier.forEach((f) => (adj.get(f) || []).forEach((o) => {
+        if (!seen.has(o.node.id)) { seen.add(o.node.id); next.push(o.node.id); }
+      }));
+      frontier = next;
+    }
+    state.focus = seen;
+    state.selected = id;
+    const n = byId.get(id);
+    nodes.forEach((x) => x.el.classList.toggle("selected", x.id === id));
+    applyFilters();
+    renderDetail(n);
+    detail.classList.add("open");
+    const banner = $("#focusBanner");
+    banner.querySelector("span").textContent = `聚焦 · ${n.name} 的 ${depth} 度关系 · ${seen.size} 人`;
+    banner.classList.add("show");
+    fitView(0.18);
+  }
+
+  function clearFocus() {
+    state.focus = null;
+    $("#focusBanner").classList.remove("show");
+    applyFilters();
+  }
+
+  /* ---------------- 视图 ---------------- */
+  function bbox() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    nodes.filter(isVisible).forEach((n) => {
+      x0 = Math.min(x0, n.x - n.r - 30); y0 = Math.min(y0, n.y - n.r - 30);
+      x1 = Math.max(x1, n.x + n.r + 30); y1 = Math.max(y1, n.y + n.r + 30);
+    });
+    if (!isFinite(x0)) return { x0: 0, y0: 0, x1: 1400, y1: 900, w: 1400, h: 900, cx: 700, cy: 450 };
+    return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
+  function fitView(pad) {
+    const b = bbox();
+    const p = pad == null ? 0.08 : pad;
+    const k = Math.max(0.22, Math.min(1.5, Math.min(stageW / (b.w * (1 + p * 2)), stageH / (b.h * (1 + p * 2)))));
+    animateCam({ k, x: stageW / 2 - b.cx * k, y: stageH / 2 - b.cy * k });
+  }
+
+  function updateLabelVisibility() {
+    stage.classList.toggle("show-labels", cam.k > 1.08);
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(layoutLabels, 150);
+  }
+
+  /* ---------------- 交互 ---------------- */
+  function worldPoint(ev) {
+    const rect = stage.getBoundingClientRect();
+    return { x: (ev.clientX - rect.left - cam.x) / cam.k, y: (ev.clientY - rect.top - cam.y) / cam.k };
+  }
+
+  svg.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = stage.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const nk = Math.max(0.22, Math.min(4.5, cam.k * Math.exp(-e.deltaY * 0.0014)));
+    cam.x = mx - ((mx - cam.x) * nk) / cam.k;
+    cam.y = my - ((my - cam.y) * nk) / cam.k;
+    cam.k = nk;
+    applyCam();
+    updateLabelVisibility();
+    dirty = true;
+  }, { passive: false });
+
+  svg.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    const nodeEl = e.target.closest(".node");
+    down = { x: e.clientX, y: e.clientY, camX: cam.x, camY: cam.y, nodeId: nodeEl ? nodeEl.dataset.id : null };
+    moved = false;
+    if (nodeEl) {
+      draggingNode = byId.get(nodeEl.dataset.id);
+      draggingNode.fixed = true;
+      draggingNode.vx = 0; draggingNode.vy = 0;
+    } else {
+      panning = true;
+      stage.classList.add("dragging");
+    }
+    svg.setPointerCapture(e.pointerId);
+  });
+
+  svg.addEventListener("pointermove", (e) => {
+    if (!down) return;
+    if (Math.abs(e.clientX - down.x) > 3 || Math.abs(e.clientY - down.y) > 3) moved = true;
+
+    if (draggingNode) {
+      if (!moved) return;
+      const p = worldPoint(e);
+      draggingNode.x = p.x; draggingNode.y = p.y;
+      draggingNode.vx = 0; draggingNode.vy = 0;
+      alpha = Math.max(alpha, 0.35);
+      dirty = true;
+      return;
+    }
+    if (panning) {
+      cam.x = down.camX + (e.clientX - down.x);
+      cam.y = down.camY + (e.clientY - down.y);
+      applyCam();
+      dirty = true;
+    }
+  });
+
+  function endPointer(e) {
+    const clickId = draggingNode ? draggingNode.id : (down ? down.nodeId : null);
+    if (draggingNode) {
+      draggingNode.fixed = false;
+      for (let i = 0; i < 70; i++) tick();
+      nodes.forEach((n) => { n.vx = 0; n.vy = 0; });
+      draggingNode = null;
+      alpha = 0;
+      layoutLabels();
+      dirty = true;
+    }
+    if (panning) { panning = false; stage.classList.remove("dragging"); }
+    if (!moved && down) {
+      if (clickId) selectNode(clickId, false);
+      else if (state.selected) clearSelection();
+    }
+    down = null;
+    moved = false;
+  }
+  svg.addEventListener("pointerup", endPointer);
+  svg.addEventListener("pointercancel", () => {
+    if (draggingNode) draggingNode.fixed = false;
+    draggingNode = null; panning = false; down = null;
+    stage.classList.remove("dragging");
+  });
+
+  svg.addEventListener("pointerleave", () => {
+    if (state.hover) { state.hover = null; applyEmphasis(); hideTooltip(); }
+  });
+
+  svg.addEventListener("dblclick", (e) => {
+    if (e.target.closest(".node")) return;
+    clearFocus();
+    fitView(0.08);
+  });
+
+  svg.addEventListener("pointerover", (e) => {
+    if (down) return;
+    const nodeEl = e.target.closest(".node");
+    const id = nodeEl ? nodeEl.dataset.id : null;
+    if (id === state.hover) return;
+    state.hover = id;
+    applyEmphasis();
+    if (id) showTooltip(byId.get(id), e); else hideTooltip();
+  });
+
+  svg.addEventListener("pointerout", (e) => {
+    const to = e.relatedTarget;
+    if (to && to.closest && to.closest(".node")) return;
+    if (state.hover) { state.hover = null; applyEmphasis(); hideTooltip(); }
+  });
+
+  svg.addEventListener("pointermove", (e) => {
+    if (state.hover && !down) moveTooltip(e);
+  });
+
+  function showTooltip(n, e) {
+    tooltip.innerHTML = `<div class="t-name">${escapeHtml(n.name)}</div><div class="t-en">${escapeHtml(n.en)}</div><div class="t-org">${escapeHtml(n.org)} · ${escapeHtml(n.country)}</div><div class="t-tags">${n.tags.map(escapeHtml).join(" / ")}</div>`;
+    tooltip.classList.add("show");
+    moveTooltip(e);
+  }
+  function moveTooltip(e) {
+    const w = tooltip.offsetWidth || 220, h = tooltip.offsetHeight || 70;
+    let x = e.clientX + 16, y = e.clientY + 16;
+    if (x + w > window.innerWidth - 12) x = e.clientX - w - 16;
+    if (y + h > window.innerHeight - 12) y = e.clientY - h - 16;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+  }
+  function hideTooltip() { tooltip.classList.remove("show"); }
+
+  /* ---------------- 控件 ---------------- */
+  function chip(label, count, color, on, onClick) {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.on = on ? "true" : "false";
+    const c = color || "#38bdf8";
+    b.style.setProperty("--c", c);
+    b.innerHTML = `<span class="tick">✓</span><span class="lab">${escapeHtml(label)}</span><span class="n">${count}</span>`;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  const chipRefs = { fields: [], careers: [], regions: [], edges: [], tags: [] };
+
+  function buildChips() {
+    Object.keys(chipRefs).forEach((k) => { chipRefs[k] = []; });
+
+    const fc = $("#fieldChips");
+    fc.innerHTML = "";
+    Object.entries(FIELDS).forEach(([key, f]) => {
+      const b = chip(f.label, nodes.filter((n) => n.field === key).length, f.color, state.fields.has(key), () => {
+        toggle(state.fields, key); state.preset = null; syncPresets(); applyFilters();
+      });
+      chipRefs.fields.push({ key, b });
+      fc.appendChild(b);
+    });
+
+    const cc = $("#careerChips");
+    cc.innerHTML = "";
+    ["senior", "mid", "early"].forEach((key) => {
+      const b = chip(CAREER[key].label, nodes.filter((n) => n.career === key).length, CAREER[key].color, state.careers.has(key), () => {
+        toggle(state.careers, key); state.preset = null; syncPresets(); applyFilters();
+      });
+      chipRefs.careers.push({ key, b });
+      cc.appendChild(b);
+    });
+
+    const rc = $("#regionChips");
+    rc.innerHTML = "";
+    Object.entries(REGIONS).forEach(([key, r]) => {
+      const b = chip(r.label, nodes.filter((n) => n.region === key).length, null, state.regions.has(key), () => {
+        toggle(state.regions, key); state.preset = null; syncPresets(); applyFilters();
+      });
+      chipRefs.regions.push({ key, b });
+      rc.appendChild(b);
+    });
+
+    const ec = $("#edgeChips");
+    ec.innerHTML = "";
+    ["advise", "collab", "team", "topic", "org"].forEach((key) => {
+      const b = chip(EDGES[key].label, links.filter((l) => l.type === key).length, EDGES[key].color, state.edgeTypes.has(key), () => {
+        toggle(state.edgeTypes, key); state.preset = null; syncPresets(); applyFilters();
+      });
+      chipRefs.edges.push({ key, b });
+      ec.appendChild(b);
+    });
+
+    const tc = $("#tagChips");
+    tc.innerHTML = "";
+    const tagCount = new Map();
+    nodes.forEach((n) => n.tags.forEach((t) => tagCount.set(t, (tagCount.get(t) || 0) + 1)));
+    tagTotal = tagCount.size;
+    [...tagCount.entries()].sort((a, b) => b[1] - a[1]).forEach(([tag, count]) => {
+      const b = chip(tag, count, null, state.tags.has(tag), () => {
+        toggle(state.tags, tag); state.preset = null; syncPresets(); applyFilters();
+      });
+      chipRefs.tags.push({ key: tag, b });
+      tc.appendChild(b);
+    });
+  }
+
+  function syncChipStates() {
+    chipRefs.fields.forEach(({ key, b }) => { b.dataset.on = state.fields.has(key) ? "true" : "false"; });
+    chipRefs.careers.forEach(({ key, b }) => { b.dataset.on = state.careers.has(key) ? "true" : "false"; });
+    chipRefs.regions.forEach(({ key, b }) => { b.dataset.on = state.regions.has(key) ? "true" : "false"; });
+    chipRefs.edges.forEach(({ key, b }) => { b.dataset.on = state.edgeTypes.has(key) ? "true" : "false"; });
+    chipRefs.tags.forEach(({ key, b }) => { b.dataset.on = state.tags.has(key) ? "true" : "false"; });
+  }
+
+  function toggle(set, key) {
+    if (set.has(key)) {
+      if (set.size === 1) return;
+      set.delete(key);
+    } else {
+      set.add(key);
+    }
+  }
+
+  const PRESETS = [
+    { id: "all", label: "全景", sub: "全部学者" },
+    { id: "lineage", label: "师承脉络", sub: "只看导师—学生" },
+    { id: "cn", label: "中国团队", sub: "内地与香港" },
+    { id: "eu", label: "欧洲 / 英国", sub: "Sheffield · Padova · Aachen" },
+    { id: "na", label: "北美", sub: "WEMPEC · MIT · TAMU" },
+    { id: "drive", label: "驱动与控制", sub: "电力电子 + 控制" },
+    { id: "dual", label: "集成绕组 / 双端口", sub: "曲荣海 → 牛双霞" },
+    { id: "senior", label: "资深学者", sub: "院士 / Fellow / 杰青" },
+    { id: "youth", label: "青年学者", sub: "助理/副教授 · 近十年博士" },
+    { id: "reset", label: "重置视图", sub: "回到初始状态" }
+  ];
+
+  function buildPresets() {
+    const wrap = $("#presets");
+    wrap.innerHTML = "";
+    PRESETS.forEach((p) => {
+      const b = document.createElement("button");
+      b.className = "preset";
+      b.dataset.id = p.id;
+      b.innerHTML = `${p.label}<small>${p.sub}</small>`;
+      b.addEventListener("click", () => applyPreset(p.id));
+      wrap.appendChild(b);
+    });
+  }
+
+  function resetSets() {
+    state.fields = new Set(allFields);
+    state.regions = new Set(allRegions);
+    state.edgeTypes = new Set(["advise", "collab", "team", "topic"]);
+    state.tags = new Set();
+    state.careers = new Set(["senior", "mid", "early"]);
+    state.hideYouth = false;
+    state.focus = null;
+    $("#focusBanner").classList.remove("show");
+    syncYouthToggle();
+  }
+
+  function syncYouthToggle() {
+    const b = $("#youthToggle");
+    if (!b) return;
+    b.dataset.on = state.hideYouth ? "false" : "true";
+    b.textContent = state.hideYouth ? "青年学者：已移出主图（点击恢复）" : "青年学者：已显示（点击移出）";
+  }
+
+  function applyPreset(id) {
+    resetSets();
+    state.selected = null;
+    detail.classList.remove("open");
+    nodes.forEach((n) => n.el.classList.remove("selected"));
+    if (id === "lineage") {
+      state.preset = "lineage";
+      state.edgeTypes = new Set(["advise"]);
+    } else if (id === "cn") {
+      state.preset = "cn"; state.regions = new Set(["中国", "中国香港"]);
+    } else if (id === "eu") {
+      state.preset = "eu"; state.regions = new Set(["欧洲"]);
+    } else if (id === "na") {
+      state.preset = "na"; state.regions = new Set(["北美"]);
+    } else if (id === "drive") {
+      state.preset = "drive"; state.fields = new Set(["drive", "control"]);
+    } else if (id === "dual") {
+      state.preset = "dual";
+    } else if (id === "senior") {
+      state.preset = "senior"; state.careers = new Set(["senior"]);
+    } else if (id === "youth") {
+      state.preset = "youth"; state.careers = new Set(["early"]);
+    } else {
+      state.preset = "all";
+    }
+    rebuildChips();
+    syncPresets();
+    applyFilters();
+    if (id === "dual") focusOn("niu_shuangxia", 2);
+    else fitView(0.08);
+  }
+
+  function rebuildChips() { buildChips(); }
+
+  function syncPresets() {
+    document.querySelectorAll(".preset").forEach((b) => b.classList.toggle("active", b.dataset.id === state.preset));
+  }
+
+  /* ---------------- 搜索 ---------------- */
+  const searchInput = $("#search");
+  const searchResults = $("#searchResults");
+  let searchIdx = -1;
+
+  function doSearch() {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) { searchResults.classList.remove("open"); return; }
+    const hits = nodes.filter((n) =>
+      (n.name + " " + n.en + " " + n.label + " " + n.org + " " + n.tags.join(" ") + " " + n.country).toLowerCase().includes(q)
+    ).slice(0, 8);
+    searchResults.innerHTML = "";
+    if (!hits.length) {
+      searchResults.innerHTML = '<div class="sr-empty">没有匹配的学者，试试机构名或方向关键词</div>';
+    } else {
+      hits.forEach((n, i) => {
+        const item = document.createElement("div");
+        item.className = "sr-item" + (i === 0 ? " active" : "");
+        item.innerHTML = `<span class="sr-dot" style="background:${FIELDS[n.field].color}"></span><span class="sr-name">${escapeHtml(n.name)}</span><span class="sr-org">${escapeHtml(n.org)}</span>`;
+        item.addEventListener("click", () => pickSearch(n.id));
+        searchResults.appendChild(item);
+      });
+    }
+    searchIdx = 0;
+    searchResults.classList.add("open");
+  }
+
+  function pickSearch(id) {
+    searchResults.classList.remove("open");
+    searchInput.value = "";
+    const n = byId.get(id);
+    if (!isVisible(n)) { resetSets(); applyFilters(); }
+    selectNode(id, true);
+  }
+
+  searchInput.addEventListener("input", doSearch);
+  searchInput.addEventListener("focus", () => { if (searchInput.value.trim()) doSearch(); });
+  searchInput.addEventListener("keydown", (e) => {
+    const items = [...searchResults.querySelectorAll(".sr-item")];
+    if (!items.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      searchIdx = (searchIdx + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      items.forEach((it, i) => it.classList.toggle("active", i === searchIdx));
+      items[searchIdx].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      items[Math.max(0, searchIdx)].click();
+    } else if (e.key === "Escape") {
+      searchResults.classList.remove("open");
+      searchInput.blur();
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-wrap")) searchResults.classList.remove("open");
+  });
+
+  /* ---------------- 其他 ---------------- */
+  $("#zoomIn").addEventListener("click", () => zoomBy(1.25));
+  $("#zoomOut").addEventListener("click", () => zoomBy(0.8));
+  $("#zoomFit").addEventListener("click", () => fitView(0.08));
+  $("#btnExport").addEventListener("click", exportPNG);
+  $("#insightClose").addEventListener("click", () => $("#insight").classList.add("hide"));
+  $("#btnAbout").addEventListener("click", () => $("#aboutModal").classList.add("open"));
+  $("#aboutClose").addEventListener("click", () => $("#aboutModal").classList.remove("open"));
+  $("#aboutModal").addEventListener("click", (e) => { if (e.target.id === "aboutModal") e.currentTarget.classList.remove("open"); });
+  $("#focusExit").addEventListener("click", clearFocus);
+  $("#youthToggle").addEventListener("click", () => {
+    state.hideYouth = !state.hideYouth;
+    if (state.hideYouth && state.selected && byId.get(state.selected).career === "early") clearSelection();
+    state.preset = null;
+    syncPresets();
+    syncYouthToggle();
+    applyFilters();
+    fitView(0.08);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if ($("#aboutModal").classList.contains("open")) $("#aboutModal").classList.remove("open");
+      else if (state.selected) clearSelection();
+    }
+    if (e.key === "/" && document.activeElement !== searchInput) {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+  function zoomBy(f) {
+    const nk = Math.max(0.22, Math.min(4.5, cam.k * f));
+    const cx = stageW / 2, cy = stageH / 2;
+    cam.x = cx - ((cx - cam.x) * nk) / cam.k;
+    cam.y = cy - ((cy - cam.y) * nk) / cam.k;
+    cam.k = nk;
+    applyCam();
+    updateLabelVisibility();
+    dirty = true;
+  }
+
+  /* ---------------- 导出 ---------------- */
+  function exportPNG() {
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = stageW * scale;
+    canvas.height = stageH * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+
+    const bg = ctx.createLinearGradient(0, 0, stageW, stageH);
+    bg.addColorStop(0, "#060a12");
+    bg.addColorStop(0.55, "#04070d");
+    bg.addColorStop(1, "#070c16");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, stageW, stageH);
+
+    ctx.save();
+    ctx.translate(cam.x, cam.y);
+    ctx.scale(cam.k, cam.k);
+
+    regionTags.forEach((tag) => {
+      if (tag.el.style.display === "none") return;
+      ctx.fillStyle = "rgba(148,163,184,0.55)";
+      ctx.font = "700 12px Inter, Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(tag.el.textContent, +tag.el.getAttribute("x"), +tag.el.getAttribute("y"));
+    });
+
+    links.forEach((l) => {
+      if (!isEdgeVisible(l)) return;
+      ctx.strokeStyle = EDGES[l.type].color;
+      ctx.globalAlpha = l.conf === "low" ? 0.28 : (l.type === "advise" ? 0.75 : 0.4);
+      ctx.lineWidth = l.type === "advise" ? 1.6 : 1.1;
+      ctx.setLineDash(l.type === "advise" ? [] : l.type === "collab" ? [5, 5] : l.type === "topic" ? [2, 6] : [1, 5]);
+      ctx.beginPath();
+      ctx.moveTo(l.a.x, l.a.y);
+      ctx.lineTo(l.b.x, l.b.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    nodes.forEach((n) => {
+      if (!isVisible(n)) return;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = FIELDS[n.field].color;
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = "rgba(4,8,14,0.9)";
+      ctx.stroke();
+      if (n.badge) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = "#f5c451";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+    });
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    nodes.filter(isVisible).forEach((n) => {
+      if (!(n.major || cam.k > 1.08)) return;
+      const size = n.major ? 12.5 : 12;
+      ctx.font = `${n.major ? 650 : 500} ${size}px Inter, Microsoft YaHei, sans-serif`;
+      const y = n.y + n.r + size / 2 + 4;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(4,7,12,0.92)";
+      ctx.strokeText(n.label, n.x, y);
+      ctx.fillStyle = "#dbe6f5";
+      ctx.fillText(n.label, n.x, y);
+    });
+
+    ctx.restore();
+
+    ctx.fillStyle = "rgba(148,163,184,0.65)";
+    ctx.font = "11px Inter, Microsoft YaHei, sans-serif";
+    ctx.fillText("电机研究网络 · 设计 / 驱动 / 控制 · 数据整理 " + DATA.meta.updated, 22, stageH - 22);
+
+    canvas.toBlob((blob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "电机研究网络.png";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    }, "image/png");
+  }
+
+  /* ---------------- 主循环 ---------------- */
+  function loop(now) {
+    stepCam(now);
+    if (alpha > 0.012 || draggingNode) {
+      tick();
+      if (!draggingNode) alpha *= 0.994;
+      dirty = true;
+    }
+    if (dirty) updatePositions();
+    requestAnimationFrame(loop);
+  }
+
+  function onResize() {
+    stageW = stage.clientWidth;
+    stageH = stage.clientHeight;
+    dirty = true;
+  }
+
+  /* ---------------- 初始化 ---------------- */
+  buildChips();
+  buildPresets();
+  syncPresets();
+  syncYouthToggle();
+  applyFilters();
+  stageW = stage.clientWidth;
+  stageH = stage.clientHeight;
+
+  $("#statLinks").textContent = links.length;
+  $("#statOrgs").textContent = new Set(nodes.map((n) => n.org)).size;
+  $("#statCountries").textContent = new Set(nodes.map((n) => n.country)).size;
+
+  const b = bbox();
+  cam.k = Math.max(0.24, Math.min(1.4, Math.min(stageW / (b.w * 1.12), stageH / (b.h * 1.12))));
+  cam.x = stageW / 2 - b.cx * cam.k;
+  cam.y = stageH / 2 - b.cy * cam.k;
+  applyCam();
+  layoutLabels();
+  placeRegionTags();
+  updatePositions();
+
+  const deepId = new URLSearchParams(location.search).get("select");
+  if (deepId && byId.has(deepId)) selectNode(deepId, true);
+  const deepPreset = new URLSearchParams(location.search).get("preset");
+  if (deepPreset && PRESETS.some((p) => p.id === deepPreset)) applyPreset(deepPreset);
+  let back = new URLSearchParams(location.search).get("back");
+  if (!back && location.protocol.startsWith("http") && /\/motor-network\/?$/.test(location.pathname)) back = "/";
+  if (back && /^\/(?!\/)/.test(back)) {
+    const a = document.createElement("a");
+    a.className = "btn backlink";
+    a.href = back;
+    a.textContent = "← 返回博客";
+    $(".top-actions").prepend(a);
+  }
+
+  window.addEventListener("resize", onResize);
+  requestAnimationFrame(loop);
+
+  const diag = document.createElement("div");
+  diag.id = "diag";
+  diag.style.display = "none";
+  const bb = bbox();
+  let minD = Infinity;
+  for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+    minD = Math.min(minD, Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y));
+  }
+  diag.textContent = JSON.stringify({
+    nodes: nodes.length, links: links.length, bbox: [Math.round(bb.x0), Math.round(bb.y0), Math.round(bb.x1), Math.round(bb.y1)],
+    minDist: Math.round(minD), k: +cam.k.toFixed(3), stage: [stageW, stageH], labelOverlaps, major: nodes.filter((n) => n.major).length
+  });
+  document.body.appendChild(diag);
+  document.title = "电机研究网络 · " + nodes.length + " 位学者 · " + links.length + " 条关系";
+})();
+
+</script>
+</body>
+</html>
