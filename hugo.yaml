@@ -62,7 +62,7 @@ menu:
     - identifier: network
       name: 研究网络
       url: /motor-network/
-      weight: 25
+      weight: 5
     - identifier: portfolio
       name: 代表作
       url: /portfolio/

@@ -99,6 +99,29 @@
     background: rgba(255, 255, 255, 0.12);
 }
 
+/* 封面主推：研究网络入口 */
+.hero .btn-network {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+    color: #04212b;
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.38);
+}
+.hero .btn-network:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(14, 165, 233, 0.5);
+    filter: brightness(1.05);
+}
+.hero .btn-network .arr {
+    font-size: 1.05em;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+.hero .btn-network:hover .arr {
+    transform: translate(2px, -2px);
+}
+
 @media (max-width: 768px) {
     .hero h1 { font-size: 2.2rem; }
     .hero p { font-size: 1.05rem; }
