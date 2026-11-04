@@ -725,7 +725,28 @@ window.MOTOR_DATA = {
   meta: {
     title: "电机研究网络",
     updated: "2026-11",
-    scope: "全球 · 电机本体设计 / 电机驱动 / 电机控制"
+    scope: "全球 · 电机本体设计 / 电机驱动 / 电机控制",
+    // 概览层默认标注的“锚点人物”
+    starIds: [
+      "lipo", "jahns", "kirtley", "emadi", "toliyat",
+      "zhu_zq", "gerada_chris", "bolognani_silverio", "bianchi_nicola", "hameyer_kay", "pyrhonen_juha",
+      "tang_renyuan", "ma_weiming", "xia_changliang", "cheng_ming", "qu_ronghai", "niu_shuangxia", "chau_kt",
+      "cchan", "liu_chunhua", "huang_sudan", "li_yongdong", "he_yikang", "xu_dianguo", "rahman", "sul"
+    ],
+    // 资深：院士 / IEEE Fellow / 国家杰青 / 讲席或荣休教授（编辑判断）
+    seniorIds: [
+      "tang_renyuan", "gu_guobiao", "ma_weiming", "xia_changliang", "cchan", "cheng_ming", "chau_kt",
+      "li_yongdong", "xu_dianguo", "qu_ronghai", "cai_wei", "hua_wei", "wu_lijian", "zhao_wenxiang",
+      "zhu_zq", "howe_david", "gerada_chris", "wheeler_patrick", "mecrow_barrie", "mellor_phil",
+      "hameyer_kay", "bolognani_silverio", "bianchi_nicola", "lomonova_elena", "pyrhonen_juha",
+      "blaabjerg_frede", "kennel_ralph", "briz_fernando",
+      "lipo", "novotny", "jahns", "lorenz", "toliyat", "kirtley", "elrefaie", "ionel", "emadi", "xu_longya",
+      "rahman", "sul"
+    ],
+    // 青年：博士毕业约 10 年内、当前为助理/副教授或研究助理教授
+    earlyIds: [
+      "jiang_mingyuan", "jiang_chaoqiang", "huang_sudan", "jiang_dong", "zheng_zedong", "zhang_pinjia"
+    ]
   },
 
   nodes: [
@@ -1178,28 +1199,10 @@ window.MOTOR_DATA = {
   };
   const CONF = { high: "●", med: "◐", low: "○" };
   const CONF_LABEL = { high: "已核实", med: "较可信", low: "待核实" };
-  // 概览层只标注这些“锚点人物”，其余在放大/悬停/点选时出现
-  const STAR_IDS = new Set([
-    "lipo", "jahns", "kirtley", "emadi", "toliyat",
-    "zhu_zq", "gerada_chris", "bolognani_silverio", "bianchi_nicola", "hameyer_kay", "pyrhonen_juha",
-    "tang_renyuan", "ma_weiming", "xia_changliang", "cheng_ming", "qu_ronghai", "niu_shuangxia", "chau_kt", "cchan", "liu_chunhua", "huang_sudan",
-    "li_yongdong", "he_yikang", "xu_dianguo",
-    "rahman", "sul"
-  ]);
-  // 资深：院士 / IEEE Fellow / 讲席或荣休教授 / 领域奠基者（编辑判断）
-  const SENIOR_IDS = new Set([
-    "tang_renyuan", "gu_guobiao", "ma_weiming", "xia_changliang", "cchan", "cheng_ming", "chau_kt",
-    "li_yongdong", "xu_dianguo", "qu_ronghai", "cai_wei", "hua_wei", "wu_lijian", "zhao_wenxiang",
-    "zhu_zq", "howe_david", "gerada_chris", "wheeler_patrick", "mecrow_barrie", "mellor_phil",
-    "hameyer_kay", "bolognani_silverio", "bianchi_nicola", "lomonova_elena", "pyrhonen_juha",
-    "blaabjerg_frede", "kennel_ralph", "briz_fernando",
-    "lipo", "novotny", "jahns", "lorenz", "toliyat", "kirtley", "elrefaie", "ionel", "emadi", "xu_longya",
-    "rahman", "sul"
-  ]);
-  // 青年：博士毕业约 10 年内、当前为助理/副教授或研究助理教授
-  const EARLY_IDS = new Set([
-    "jiang_mingyuan", "jiang_chaoqiang", "huang_sudan", "jiang_dong", "zheng_zedong", "zhang_pinjia"
-  ]);
+  // 人物分层/概览标注的名单统一维护在 data.js 的 meta 里
+  const STAR_IDS = new Set((DATA.meta && DATA.meta.starIds) || []);
+  const SENIOR_IDS = new Set((DATA.meta && DATA.meta.seniorIds) || []);
+  const EARLY_IDS = new Set((DATA.meta && DATA.meta.earlyIds) || []);
   const careerOf = (id) => (EARLY_IDS.has(id) ? "early" : SENIOR_IDS.has(id) ? "senior" : "mid");
   const NS = "http://www.w3.org/2000/svg";
   const $ = (s) => document.querySelector(s);
