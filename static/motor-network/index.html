@@ -558,7 +558,7 @@ button { font-family: inherit; }
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><b id="statNodes">112</b><span>学者</span></div>
+      <div class="stat"><b id="statNodes">125</b><span>学者</span></div>
       <div class="stat"><b id="statLinks">—</b><span>关系</span></div>
       <div class="stat"><b id="statOrgs">—</b><span>机构</span></div>
       <div class="stat"><b id="statCountries">—</b><span>国家 / 地区</span></div>
@@ -649,8 +649,8 @@ button { font-family: inherit; }
         <h4>读图</h4>
         <ul>
           <li><b>WEMPEC</b> Novotny 与 Lipo 创建；Lipo → Toliyat / Longya Xu / 曲荣海</li>
-          <li><b>中国永磁</b> 唐任远 → 沈工大；程明 → 花为；贺益康 → 年珩；深大 黄苏丹（平面电机）</li>
-          <li><b>香港 / 双端口</b> 理大 诸自强、牛双霞、邹国棠、陈清泉 · 港大 许树源 · 城大 刘春华、江朝强</li>
+          <li><b>中国永磁</b> 唐任远 → 沈工大；程明 → 花为；贺益康 → 年珩；深大 潘剑飞/黄苏丹（平面电机）</li>
+          <li><b>香港 / 双端口</b> 理大 诸自强、牛双霞、邹国棠、陈清泉、袁鑫 · 港大 许树源 · 城大 刘春华、江朝强</li>
         </ul>
         <p>悬停显示姓名 · 滚轮放大 · 点击展开关系</p>
       </div>
@@ -697,7 +697,7 @@ button { font-family: inherit; }
       <p>每条关系带可信度：<b>●</b> 已核实（学校主页/IEEE 传记/博士论文）；<b>◐</b> 较可信（多方资料一致但未逐一核对原始来源）；<b>○</b> 待核实（公开资料不足，图中以稀疏虚线显示）。界面中把鼠标放在关系上可看到依据说明。</p>
 
       <h4>学者层级</h4>
-      <p>为了区分“大牛”和青年学者，图中加了一层编辑标注：<b>资深</b>（院士 / IEEE Fellow / 国家杰青 / 讲席或荣休教授，41 人）、<b>中坚</b>（62 人）、<b>青年</b>（博士毕业约 12 年内，或入选优青/青托等青年人才计划，9 人）。资深节点带银环（院士仍用金环），青年节点带蓝色虚线环；左侧“学者层级”可只看某一层，或一键把青年移出主图。</p>
+      <p>为了区分“大牛”和青年学者，图中加了一层编辑标注：<b>资深</b>（院士 / IEEE Fellow / 国家杰青 / 讲席或荣休教授，41 人）、<b>中坚</b>（62 人）、<b>青年</b>（博士毕业约 12 年内，或入选优青/青托等青年人才计划，22 人）。资深节点带银环（院士仍用金环），青年节点带蓝色虚线环；左侧“学者层级”可只看某一层，或一键把青年移出主图。</p>
 
       <h4>怎么用</h4>
       <ul>
@@ -746,7 +746,9 @@ window.MOTOR_DATA = {
     // 青年：博士毕业约 12 年内，或入选优青/青托等青年人才计划
     earlyIds: [
       "jiang_mingyuan", "jiang_chaoqiang", "huang_sudan", "jiang_dong", "zheng_zedong", "zhang_pinjia",
-      "li_dawei", "wang_yunchong", "zhang_guoqiang"
+      "li_dawei", "wang_yunchong", "zhang_guoqiang", "wang_can", "hong_yue", "deng_fujin",
+      "luo_yixiao", "luo_cheng", "kong_wubin", "zhang_hengliang", "tan_qiang", "xu_lei",
+      "hu_yashan", "jia_shaofeng", "ding_dawei", "yuan_xin"
     ]
   },
 
@@ -758,6 +760,9 @@ window.MOTOR_DATA = {
     { id: "hua_wei", name: "花为", en: "Wei Hua", label: "花为", org: "东南大学", country: "中国", region: "中国", field: "design", major: true, honor: "国家杰青",
       tags: ["永磁电机", "电动汽车", "电磁计算/优化"],
       note: "东南大学教授、电气工程学院院长，国家杰青；程明博士毕业生，2004–2005 年在 Sheffield 联合培养（师从诸自强）。" },
+    { id: "deng_fujin", name: "邓富金", en: "Fujin Deng", label: "邓富金", org: "东南大学", country: "中国", region: "中国", field: "drive",
+      tags: ["电力电子", "风电"],
+      note: "东南大学教授，国家级青年人才计划入选者；新能源发电与电力电子变换技术。" },
     { id: "tang_renyuan", name: "唐任远", en: "Renyuan Tang", label: "唐任远", org: "沈阳工业大学", country: "中国", region: "中国", field: "design", major: true, badge: "中国工程院院士",
       tags: ["永磁电机", "电磁计算/优化"],
       note: "中国工程院院士，中国永磁电机研究的奠基性人物之一，著有《现代永磁电机理论与设计》。" },
@@ -909,6 +914,12 @@ window.MOTOR_DATA = {
     { id: "pan_jianfei", name: "潘剑飞", en: "Jianfei Pan", label: "潘剑飞", org: "深圳大学", country: "中国", region: "中国", field: "control", major: true,
       tags: ["平面电机", "直线电机", "机器人"],
       note: "深圳大学教授、博导，平面/直线开关磁阻电机、精密运动控制与机器人关节；深圳市工业母机概念验证中心主任。" },
+    { id: "wang_can", name: "王璨", en: "Can Wang", label: "王璨", org: "深圳大学", country: "中国", region: "中国", field: "control",
+      tags: ["伺服驱动", "机器人关节", "模型预测"],
+      note: "深圳大学助理教授（2019 年哈工大博士），机器人关节伺服驱动、参数辨识与模型预测控制。" },
+    { id: "hong_yue", name: "洪岳", en: "Yue Hong", label: "洪岳", org: "深圳大学", country: "中国", region: "中国", field: "system",
+      tags: ["直线发电机", "波浪能", "电力控制"],
+      note: "深圳大学助理教授，2017 年 Uppsala 博士；直驱波浪能直线发电机与新能源发电控制。" },
     { id: "li_dawei", name: "李大伟", en: "Dawei Li", label: "李大伟", org: "华中科技大学", country: "中国", region: "中国", field: "design", major: true, honor: "国家优青",
       tags: ["磁场调制", "永磁电机", "航空/船舶"],
       note: "华中科技大学教授，国家优青、中国科协青托；磁场调制电机、航空多电发动机与机器人伺服电机，曲荣海团队。" },
@@ -921,6 +932,37 @@ window.MOTOR_DATA = {
     { id: "wang_kai", name: "王凯", en: "Kai Wang", label: "王凯", org: "南京航空航天大学", country: "中国", region: "中国", field: "design", major: true,
       tags: ["永磁电机", "多相/容错", "航空/船舶"],
       note: "南京航空航天大学教授、江苏特聘教授；多相/容错永磁电机，曾于 Sheffield 跟随诸自强从事博士后/第二博士研究。" },
+
+    { id: "luo_yixiao", name: "罗伊逍", en: "Yixiao Luo", label: "罗伊逍", org: "华中科技大学", country: "中国", region: "中国", field: "drive",
+      tags: ["永磁电机", "模型预测", "容错控制"],
+      note: "华中科技大学副教授，2019 年香港城市大学博士；永磁电机数据驱动预测控制与多自由度电机控制。" },
+    { id: "luo_cheng", name: "罗成", en: "Cheng Luo", label: "罗成", org: "华中科技大学", country: "中国", region: "中国", field: "control",
+      tags: ["感应电机", "无位置传感器", "扰动抑制"],
+      note: "华中科技大学副研究员，2021 年哈工大博士（徐殿国/于泳团队）；感应电机无速度传感器与扰动抑制。" },
+    { id: "kong_wubin", name: "孔武斌", en: "Wubin Kong", label: "孔武斌", org: "华中科技大学", country: "中国", region: "中国", field: "drive",
+      tags: ["高功率密度", "航空/船舶", "电力电子"],
+      note: "华中科技大学教授，2014 年浙大博士；高温高密度航空电机驱动与多谐波绕组，国家青年人才、科协青托。" },
+    { id: "zhang_hengliang", name: "章恒亮", en: "Hengliang Zhang", label: "章恒亮", org: "东南大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "轮毂电机", "电磁计算/优化"],
+      note: "东南大学副研究员，1992 年生，2020 年东南大学博士；轮毂/电动载运电机多物理场优化，中国科协青托。" },
+    { id: "tan_qiang", name: "谭强", en: "Qiang Tan", label: "谭强", org: "南京航空航天大学", country: "中国", region: "中国", field: "design",
+      tags: ["直线电机", "磁悬浮", "振动噪声"],
+      note: "南京航空航天大学特聘副研究员，2021 年哈工大博士；精密永磁直线电机、振动噪声与磁悬浮。" },
+    { id: "xu_lei", name: "徐磊", en: "Lei Xu", label: "徐磊", org: "江苏大学", country: "中国", region: "中国", field: "design",
+      tags: ["永磁电机", "直线电机", "混合励磁"],
+      note: "江苏大学副教授，2017 年东南大学博士；直线旋转两自由度永磁电机与混合励磁。" },
+    { id: "hu_yashan", name: "胡亚山", en: "Yashan Hu", label: "胡亚山", org: "湖南大学", country: "中国", region: "中国", field: "control",
+      tags: ["多相电机", "无位置传感器", "风电"],
+      note: "湖南大学副教授，2016 年 Sheffield 博士（诸自强团队）；多相永磁电机谐波抑制与无位置传感器控制。" },
+    { id: "jia_shaofeng", name: "贾少锋", en: "Shaofeng Jia", label: "贾少锋", org: "西安交通大学", country: "中国", region: "中国", field: "design",
+      tags: ["磁场调制", "永磁电机", "电磁计算/优化"],
+      note: "西安交通大学教授，2017 年华科博士（曲荣海团队）；磁场调制/游标永磁电机拓扑与高功率密度设计。" },
+    { id: "ding_dawei", name: "丁大尉", en: "Dawei Ding", label: "丁大尉", org: "哈尔滨工业大学", country: "中国", region: "中国", field: "drive",
+      tags: ["永磁电机", "无电解电容", "电力电子"],
+      note: "哈尔滨工业大学副教授，中国科协青托；无电解电容永磁同步电机驱动与拍频抑制。" },
+    { id: "yuan_xin", name: "袁鑫", en: "Xin Yuan", label: "袁鑫", org: "香港理工大学", country: "中国", region: "中国香港", field: "drive",
+      tags: ["多相电机", "模型预测", "容错控制"],
+      note: "香港理工大学研究助理教授，2020 年博士；交通电气化多相电机驱动、MPC 与容错控制。" },
 
     /* ---------------- 欧洲 ---------------- */
     { id: "zhu_zq", name: "诸自强", en: "Zi-Qiang Zhu", label: "Z.Q. Zhu", org: "香港理工大学", country: "中国", region: "中国香港", field: "design", major: true,
@@ -1106,6 +1148,9 @@ window.MOTOR_DATA = {
     { s: "howe_david", t: "zhu_zq", type: "advise", conf: "med", note: "Sheffield 博士，此后长期同组合作" },
     { s: "zhu_zq", t: "wu_lijian", type: "advise", conf: "high", note: "2008–2011 年 Sheffield 博士，诸自强指导" },
     { s: "gerada_chris", t: "huang_xiaoyan", type: "advise", conf: "med", note: "2008 年 Nottingham 博士，与 Gerada 合作发表（师承据公开履历推断）" },
+    { s: "zhu_zq", t: "hu_yashan", type: "advise", conf: "med", note: "2016 年 Sheffield 博士，诸自强团队" },
+    { s: "qu_ronghai", t: "jia_shaofeng", type: "advise", conf: "med", note: "2017 年华科博士，曲荣海团队" },
+    { s: "xu_dianguo", t: "luo_cheng", type: "advise", conf: "med", note: "2021 年哈工大博士（徐殿国/于泳团队）" },
     { s: "bolognani_silverio", t: "bianchi_nicola", type: "advise", conf: "high", note: "Padova 博士，留校任教" },
     { s: "cheng_ming", t: "hua_wei", type: "advise", conf: "high", note: "东南大学博士，留校任教" },
     { s: "he_yikang", t: "nian_heng", type: "advise", conf: "high", note: "浙江大学博士，留校任教" },
@@ -1135,10 +1180,18 @@ window.MOTOR_DATA = {
     { s: "shen_jianxin", t: "fang_youtong", type: "team", conf: "med", note: "浙大电机设计团队" },
     { s: "deng_zhiquan", t: "zhang_zhuoran", type: "team", conf: "med", note: "南航航空电机团队" },
     { s: "pan_jianfei", t: "cao_guangzhong", type: "team", conf: "high", note: "深圳大学平面电机/磁悬浮团队" },
+    { s: "wang_can", t: "pan_jianfei", type: "team", conf: "high", note: "深大机器人关节/伺服驱动团队" },
+    { s: "hong_yue", t: "pan_jianfei", type: "team", conf: "high", note: "深大波浪能直驱发电合作" },
     { s: "li_dawei", t: "qu_ronghai", type: "team", conf: "high", note: "华中科大曲荣海团队，磁场调制电机" },
     { s: "wang_yunchong", t: "nian_heng", type: "team", conf: "high", note: "浙大电机系统及其控制研究所同事" },
     { s: "zhang_guoqiang", t: "xu_dianguo", type: "team", conf: "med", note: "哈工大电力电子与电力传动研究所" },
     { s: "wang_kai", t: "zhang_zhuoran", type: "team", conf: "high", note: "南航自动化学院同事" },
+    { s: "zhang_hengliang", t: "hua_wei", type: "team", conf: "med", note: "东南大学花为团队（电动载运电驱）" },
+    { s: "tan_qiang", t: "deng_zhiquan", type: "team", conf: "med", note: "南航高速/磁悬浮团队" },
+    { s: "xu_lei", t: "zhao_wenxiang", type: "team", conf: "high", note: "江苏大学容错/特种电机团队" },
+    { s: "hu_yashan", t: "huang_shoudao", type: "team", conf: "high", note: "湖南大学风电/特种电机团队" },
+    { s: "ding_dawei", t: "wang_gaolin", type: "team", conf: "med", note: "哈工大电机驱动团队" },
+    { s: "yuan_xin", t: "niu_shuangxia", type: "team", conf: "med", note: "香港理工大学电机团队" },
 
     /* 合作 / 共同作者 */
     { s: "lipo", t: "novotny", type: "collab", conf: "high", note: "UW-Madison WEMPEC 同事与共同作者" },
@@ -1163,6 +1216,7 @@ window.MOTOR_DATA = {
     { s: "pan_jianfei", t: "huang_sudan", type: "collab", conf: "high", note: "深大机电学院同事，平面电机/运动控制合作" },
     { s: "zhang_guoqiang", t: "wang_gaolin", type: "collab", conf: "high", note: "合著无位置传感器控制专著，长期合作" },
     { s: "wang_kai", t: "zhu_zq", type: "collab", conf: "high", note: "2010–2013 年 Sheffield 博士后/第二博士，师从诸自强" },
+    { s: "luo_yixiao", t: "kong_wubin", type: "collab", conf: "med", note: "华中科大电机驱动同事" },
     { s: "emadi", t: "mi_chris", type: "collab", conf: "med", note: "电动汽车动力总成社区" },
 
     /* 同一技术路线 / 研究方向相近 */
