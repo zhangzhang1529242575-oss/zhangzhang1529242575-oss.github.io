@@ -1273,10 +1273,10 @@ window.MOTOR_DATA = {
   };
   const REGIONS = {
     "中国": { label: "中国内地", anchor: [300, 480] },
-    "中国香港": { label: "中国香港", anchor: [640, 660] },
+    "中国香港": { label: "中国香港", anchor: [720, 760] },
     "欧洲": { label: "欧洲 / 英国", anchor: [760, 220] },
     "北美": { label: "北美", anchor: [1120, 480] },
-    "亚太": { label: "亚太（日韩澳）", anchor: [880, 860] }
+    "亚太": { label: "亚太（日韩澳）", anchor: [980, 900] }
   };
   const EDGES = {
     advise: { label: "师承", color: "#fb923c", priority: 5 },
@@ -1527,7 +1527,8 @@ window.MOTOR_DATA = {
         let d2 = dx * dx + dy * dy;
         if (d2 < 0.01) { dx = 0.3; dy = 0.2; d2 = 0.13; }
         const d = Math.sqrt(d2);
-        const f = layout.charge / d2;
+        const boost = a.region === "中国" && b.region === "中国" ? 1.6 : (a.region === "中国" || b.region === "中国" ? 1.26 : 1);
+        const f = (layout.charge * boost) / d2;
         const ux = dx / d, uy = dy / d;
         a.fx -= ux * f; a.fy -= uy * f;
         b.fx += ux * f; b.fy += uy * f;
