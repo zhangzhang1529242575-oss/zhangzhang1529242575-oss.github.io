@@ -588,6 +588,14 @@ button { font-family: inherit; }
       </section>
 
       <section>
+        <h2>布局密度</h2>
+        <div class="chips" id="layoutChips">
+          <button class="chip density-btn" data-layout="compact" data-on="false"><span class="tick">✓</span><span class="lab">紧凑</span></button>
+          <button class="chip density-btn" data-layout="spacious" data-on="true"><span class="tick">✓</span><span class="lab">舒展</span></button>
+        </div>
+      </section>
+
+      <section>
         <h2>研究方向 <span class="cnt" id="cntFields"></span></h2>
         <div class="chips" id="fieldChips"></div>
       </section>
@@ -705,6 +713,7 @@ button { font-family: inherit; }
         <li>点 <b>集成绕组 / 双端口</b> 进入“曲荣海 → 牛双霞”的二度关系视角。</li>
         <li>选中一位学者后，右侧面板列出导师、学生、合作者与同机构同事，可继续点击漫游。</li>
         <li>用 <b>学者层级</b> 或“资深学者 / 青年学者”视角，区分资深 PI 与青年学者；点“青年学者：移出主图”可得到一张只有资深/中坚的干净网络。</li>
+        <li>用 <b>布局密度</b> 在“紧凑 / 舒展”之间切换；觉得挤就点“舒展”，想一屏看全就点“紧凑”。</li>
         <li>用主题标签（永磁、无轴承、风电、电动汽车……）交叉筛选，找交叉方向的人。</li>
       </ul>
 
@@ -1460,10 +1469,19 @@ window.MOTOR_DATA = {
   });
 
   /* ---------------- 物理 ---------------- */
-  const CHARGE = 700;
-  const REGION_K = 0.0055;
-  const LINK_K = { advise: 0.10, collab: 0.07, team: 0.08, topic: 0.06, org: 0.05 };
-  const REST = { advise: 120, collab: 148, team: 96, topic: 140, org: 84 };
+  const LAYOUTS = {
+    compact: {
+      charge: 700, regionK: 0.0055, pad: 7,
+      link: { advise: 0.10, collab: 0.07, team: 0.08, topic: 0.06, org: 0.05 },
+      rest: { advise: 120, collab: 148, team: 96, topic: 140, org: 84 }
+    },
+    spacious: {
+      charge: 2000, regionK: 0.006, pad: 10,
+      link: { advise: 0.080, collab: 0.056, team: 0.064, topic: 0.048, org: 0.040 },
+      rest: { advise: 143, collab: 176, team: 114, topic: 166, org: 100 }
+    }
+  };
+  let layout = LAYOUTS.spacious;
 
   function mulberry32(a) {
     return function () {
@@ -1474,6 +1492,10 @@ window.MOTOR_DATA = {
     };
   }
   const rnd = mulberry32(20261104);
+
+  let savedLayout = "spacious";
+  try { savedLayout = localStorage.getItem("motor-layout") || "spacious"; } catch (e) { /* file:// 可能禁用 */ }
+  layout = LAYOUTS[savedLayout] || LAYOUTS.spacious;
 
   nodes.forEach((n) => {
     const a = REGIONS[n.region] ? REGIONS[n.region].anchor : [700, 450];
@@ -1490,8 +1512,8 @@ window.MOTOR_DATA = {
       const a = l.a, b = l.b;
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-      const k = LINK_K[l.type] || 0.05;
-      const rest = REST[l.type] || 130;
+      const k = layout.link[l.type] || 0.05;
+      const rest = layout.rest[l.type] || 130;
       const f = ((d - rest) / d) * k;
       a.fx += dx * f; a.fy += dy * f;
       b.fx -= dx * f; b.fy -= dy * f;
@@ -1505,11 +1527,11 @@ window.MOTOR_DATA = {
         let d2 = dx * dx + dy * dy;
         if (d2 < 0.01) { dx = 0.3; dy = 0.2; d2 = 0.13; }
         const d = Math.sqrt(d2);
-        const f = CHARGE / d2;
+        const f = layout.charge / d2;
         const ux = dx / d, uy = dy / d;
         a.fx -= ux * f; a.fy -= uy * f;
         b.fx += ux * f; b.fy += uy * f;
-        const min = a.r + b.r + 7;
+        const min = a.r + b.r + layout.pad;
         if (d < min) {
           const push = (min - d) * 0.4;
           a.fx -= ux * push; a.fy -= uy * push;
@@ -1520,19 +1542,19 @@ window.MOTOR_DATA = {
 
     for (const n of nodes) {
       const a = REGIONS[n.region] ? REGIONS[n.region].anchor : [700, 450];
-      n.fx += (a[0] - n.x) * REGION_K;
-      n.fy += (a[1] - n.y) * REGION_K;
+      n.fx += (a[0] - n.x) * layout.regionK;
+      n.fy += (a[1] - n.y) * layout.regionK;
       n.vx = (n.vx + n.fx) * 0.86;
       n.vy = (n.vy + n.fy) * 0.86;
       const sp = Math.hypot(n.vx, n.vy);
       if (sp > 9) { n.vx = n.vx / sp * 9; n.vy = n.vy / sp * 9; }
       if (!n.fixed) { n.x += n.vx; n.y += n.vy; }
-      n.x = Math.max(-150, Math.min(1550, n.x));
-      n.y = Math.max(-100, Math.min(1050, n.y));
+      n.x = Math.max(-300, Math.min(1900, n.x));
+      n.y = Math.max(-250, Math.min(1300, n.y));
     }
   }
 
-  for (let i = 0; i < 500; i++) tick();
+  for (let i = 0; i < 800; i++) tick();
   nodes.forEach((n) => { n.vx = 0; n.vy = 0; });
   alpha = 0;
 
@@ -1878,6 +1900,36 @@ window.MOTOR_DATA = {
     const p = pad == null ? 0.08 : pad;
     const k = Math.max(0.22, Math.min(1.5, Math.min(stageW / (b.w * (1 + p * 2)), stageH / (b.h * (1 + p * 2)))));
     animateCam({ k, x: stageW / 2 - b.cx * k, y: stageH / 2 - b.cy * k });
+  }
+
+  function relayout(name) {
+    layout = LAYOUTS[name] || LAYOUTS.spacious;
+    try { localStorage.setItem("motor-layout", name); } catch (e) { /* ignore */ }
+    document.querySelectorAll(".density-btn").forEach((b) => {
+      b.dataset.on = b.dataset.layout === name ? "true" : "false";
+    });
+    nodes.forEach((n) => {
+      const a = REGIONS[n.region] ? REGIONS[n.region].anchor : [700, 450];
+      const ang = Math.random() * Math.PI * 2;
+      const rad = 40 + Math.random() * 170;
+      n.x = a[0] + Math.cos(ang) * rad;
+      n.y = a[1] + Math.sin(ang) * rad;
+      n.vx = 0; n.vy = 0; n.fixed = false;
+    });
+    for (let i = 0; i < 800; i++) tick();
+    nodes.forEach((n) => { n.vx = 0; n.vy = 0; });
+    alpha = 0;
+    layoutLabels();
+    placeRegionTags();
+    fitView(0.08);
+    dirty = true;
+  }
+
+  function initDensity() {
+    document.querySelectorAll(".density-btn").forEach((b) => {
+      b.dataset.on = b.dataset.layout === (layout === LAYOUTS.compact ? "compact" : "spacious") ? "true" : "false";
+      b.addEventListener("click", () => relayout(b.dataset.layout));
+    });
   }
 
   function updateLabelVisibility() {
@@ -2393,6 +2445,7 @@ window.MOTOR_DATA = {
   buildChips();
   buildPresets();
   syncPresets();
+  initDensity();
   syncYouthToggle();
   applyFilters();
   stageW = stage.clientWidth;
